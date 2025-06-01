@@ -1,1 +1,0 @@
-# PerioScan-Mobile
