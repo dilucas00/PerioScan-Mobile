@@ -71,13 +71,13 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="Config/index"
+        name="UserManagement/index"
         options={{
           title: "",
           tabBarIcon: ({ focused }) => (
             <View style={styles.iconContainer}>
               <Image
-                source={require("../../assets/ConfigIcon.png")}
+                source={require("../../assets/userManagementIcon.png")}
                 tintColor={focused ? "#fff" : "rgba(255, 255, 255, 0.5)"}
                 style={styles.icon}
                 resizeMode="contain"

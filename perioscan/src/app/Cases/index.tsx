@@ -1,182 +1,217 @@
 import React from "react";
-import { Text, View, StyleSheet, SafeAreaView } from "react-native";
-import { Searchbar, SegmentedButtons, Button } from "react-native-paper";
+import { Text, View, StyleSheet, SafeAreaView, ScrollView } from "react-native";
+import { Searchbar, SegmentedButtons, Appbar, Button } from "react-native-paper";
+import CaseCard from "../../Components/caseCard";
+
 export default function Cases() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [value, setValue] = React.useState("");
-  return (
-    <View style={styles.mainContainerCases}>
-      <View style={styles.topContainerCases}>
-        <Searchbar
-          placeholder="Buscar caso"
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          style={styles.searchbar}
-        />
-      </View>
-      <Text style={styles.titleContainerCases}>Gerenciamento de casos</Text>
-      <SafeAreaView style={styles.filtroContainerCase}>
-        <SegmentedButtons
-          value={value}
-          onValueChange={setValue}
-          buttons={[
-            {
-              value: "todos",
-              label: "Todos",
+  const [showSearch, setShowSearch] = React.useState(false); 
 
-              style: {
-                backgroundColor: value === "todos" ? "black" : "white",
-              },
-              checkedColor: "white",
-              uncheckedColor: "black",
-            },
-            {
-              value: "em andamento",
-              label: "Em andamento",
-              style: {
-                backgroundColor: value === "em andamento" ? "black" : "white",
-              },
-              checkedColor: "white",
-              uncheckedColor: "black",
-            },
-            {
-              value: "finalizados",
-              label: "Finalizados",
-              style: {
-                backgroundColor: value === "finalizados" ? "black" : "white",
-              },
-              checkedColor: "white",
-              uncheckedColor: "black",
-            },
-          ]}
+  return (
+    <View style={styles.mainContainer}>
+      {/* Header com Appbar */}
+      <Appbar.Header style={styles.header}>
+        <Appbar.Content 
+          title="Gerenciamento de casos" 
+          titleStyle={styles.headerTitle}
         />
-      </SafeAreaView>
-      <View style={styles.cardContainerCases}>
-        <View style={styles.titleCardContainerCases}>
-          <Text style={styles.titleContainerCard}>Todos os casos (8)</Text>
-        </View>
-        <View style={styles.cardCases}>
-          <View style={styles.infoCardCases}>
-            
-            <View style={styles.cardTextInfoCases}>
-              <Text style={styles.textCardCases}>
-                <strong>Marcas de mordida em criança vítima{"\n"}de maus tratos </strong>
-              </Text>
-              <Text style={styles.textCardCases}>Tipo: Exame Criminal</Text>
-              <Text style={styles.textCardCases}>Criador: Admin</Text>
-              <Text style={styles.textCardCases}>Status: Em andamento</Text>
-            </View>
-            <Button
-              style={styles.buttonVerCaso}
-              icon="eye"
-              mode="elevated"
-              textColor="#000"
-              labelStyle={styles.buttonLabel}
-            >
-              Ver caso
-            </Button>
+        <Appbar.Action 
+          icon="magnify" 
+          onPress={() => setShowSearch(!showSearch)} 
+          color="#FFF"
+        />
+      </Appbar.Header>
+
+      <ScrollView 
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {showSearch && ( // exibe Searchbar se showSearch for true
+          <View style={styles.searchContainer}>
+            <Searchbar
+              placeholder="Buscar caso"
+              onChangeText={setSearchQuery}
+              value={searchQuery}
+              style={styles.searchbar}
+              iconColor="#000"
+              inputStyle={styles.searchInput}
+              placeholderTextColor="#888"
+              autoFocus
+            />
           </View>
+        )}
+
+        <SafeAreaView style={styles.filtroContainer}>
+          <SegmentedButtons
+            value={value}
+            density="medium"
+            onValueChange={setValue}
+            style={styles.segmentedButtons}
+            buttons={[
+              {
+                value: "todos",
+                label: "Todos",
+                labelStyle: { fontSize: 12 },
+                style: {
+                  backgroundColor: value === "todos" ? "black" : "white",
+                  borderColor: "#000",
+                },
+                checkedColor: "white",
+                uncheckedColor: "black",
+              },
+              {
+                value: "em andamento",
+                label: "Em andamento",
+                labelStyle: { fontSize: 12 },
+                style: {
+                  backgroundColor: value === "em andamento" ? "black" : "white",
+                  borderColor: "#000",
+                },
+                checkedColor: "white",
+                uncheckedColor: "black",
+              },
+              {
+                value: "finalizados",
+                label: "Finalizados",
+                labelStyle: { fontSize: 12 },
+                style: {
+                  backgroundColor: value === "finalizados" ? "black" : "white",
+                  borderColor: "#000",
+                },
+                checkedColor: "white",
+                uncheckedColor: "black",
+              },
+            ]}
+          />
+        </SafeAreaView>
+        
+        <View style={styles.cardContainer}>
+          <View style={styles.titleCardContainer}>
+            <Text style={styles.titleContainerCard}>Todos os casos (8)</Text>
+            <Button
+                        icon="plus"
+                        mode="contained"
+                        buttonColor="#000"
+                        textColor="#FFF"
+                        style={styles.buttonNovoCaso}
+                        // labelStyle={styles.buttonLabel}
+                        compact
+            >Novo caso</Button>
+          </View>
+          
+          <CaseCard
+            title="Marcas de mordida em criança vítima de maus tratos"
+            type="Exame Criminal"
+            creator="Admin"
+            status="Em andamento"
+            openingdate="24/04/2025"
+          />
+
+          <CaseCard
+            title="Identificação post-mortem em acidente aéreo"
+            type="Identificação de Vítima	"
+            creator="Admin"
+            status="Finalizado"
+            openingdate="14/05/2025"
+          />
+          <CaseCard
+            title="Avaliação de traumatismo dentofacial em acidente de trânsito"
+            type="Acidente"
+            creator="Admin"
+            status="Finalizado"
+            openingdate="01/05/2025"
+          />
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
 
+
+
 const styles = StyleSheet.create({
-  topContainerCases: {
-    width: "100%",
-    backgroundColor: "#000",
-    borderWidth: 2,
-    borderColor: "#333",
-    height: 100,
-    justifyContent: "center",
-    padding: 10,
-    marginTop: 10,
-  },
-  searchbar: {
-    width: "80%",
-    height: 50,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    marginLeft: "5%",
-    marginRight: "5%",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 10,
-  },
-  mainContainerCases: {
+  mainContainer: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
-    width: "100%",
-    height: "100%",
   },
-  titleContainerCases: {
-    fontSize: 24,
+  scrollContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  header: {
+    backgroundColor: "#000",
+    elevation: 0,
+    shadowOpacity: 0,
+    height: 70, 
+
+  },
+  headerTitle: {
+    color: "#FFF",
+    fontSize: 18,
     fontWeight: "bold",
-    marginTop: 40,
-    marginRight: "15%",
+    textAlign: "center",
   },
-  filtroContainerCase: {
-    marginTop: 20,
-    width: "90%",
+  searchContainer: {
+    padding: 16,
+    backgroundColor: "#000",
+    paddingBottom: 20,
   },
-  cardContainerCases: {
-    backgroundColor: "#e9e9e9",
-    width: "100%",
-    height: 500,
-    marginTop: 20,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-  },
-  titleCardContainerCases: {
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    flexDirection: "row",
-    marginLeft: "10%",
-    height: 50,
-  },
-  titleContainerCard: {
-    fontSize: 22,
-    fontWeight: "600",
-  },
-  cardCases: {
+  searchbar: {
     backgroundColor: "#fff",
-    width: "90%",
-    height: 120,
+    borderRadius: 8,
+    elevation: 2,
+  },
+  searchInput: {
+    color: "#000",
+    minHeight: 40,
+  },
+  filtroContainer: {
+    padding: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
+    marginTop: 20,
+    width: "100%",
+    backgroundColor: "#FFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEE",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 20,
-    marginLeft: "5%",
+    paddingHorizontal: 10,
+  },
+  segmentedButtons: {
     borderRadius: 5,
-  },
-  buttonVerCaso: {
-    height: 40,
-    flexDirection: "column",
-    paddingHorizontal: 0,
-  },
-  buttonLabel: {
-    fontSize: 12,
-  },
-  cardTextInfoCases: {
-    flexDirection: "column",
-    justifyContent: "flex-end",
-    height: 65,
-    gap: 5,
-    borderLeftColor: "#ccc",
-    paddingBottom: 10,
-  },
-  textCardCases: {
-    fontSize: 10,
-    fontWeight: "400",
-    marginLeft: 10,
-  },
-  infoCardCases: {
-    justifyContent: "flex-start",
-    flexDirection: "row",
-    alignItems: "flex-start",
+    overflow: "hidden",
     width: "90%",
-    height: 40,
+    fontSize: 10,
+  },
+  cardContainer: {
+    backgroundColor: "#f5f5f5",
+    flex: 1,
+    paddingTop: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+  titleCardContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  titleContainerCard: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333",
+  },
+  buttonNovoCaso: {
+    marginLeft: "auto",
+    borderRadius: 5,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    height: 35,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
