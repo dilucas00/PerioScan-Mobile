@@ -1,7 +1,6 @@
 import React from "react";
-
 import { Text, View, StyleSheet, SafeAreaView } from "react-native";
-import { Searchbar, SegmentedButtons } from "react-native-paper";
+import { Searchbar, SegmentedButtons, Button } from "react-native-paper";
 export default function Cases() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [value, setValue] = React.useState("");
@@ -54,10 +53,28 @@ export default function Cases() {
       </SafeAreaView>
       <View style={styles.cardContainerCases}>
         <View style={styles.titleCardContainerCases}>
-          <Text style={styles.titleContainerCard}>Todos os casos</Text>
+          <Text style={styles.titleContainerCard}>Todos os casos (8)</Text>
         </View>
         <View style={styles.cardCases}>
-          <Text>Card</Text>
+          <View style={styles.infoCardCases}>
+            <Button
+              style={styles.buttonVerCaso}
+              icon="eye"
+              mode="elevated"
+              textColor="#000"
+              labelStyle={styles.buttonLabel}
+            >
+              Ver caso
+            </Button>
+            <View style={styles.cardTextInfoCases}>
+              <Text style={styles.textCardCases}>
+                Titulo: Marcas de mordida em criança vítima{"\n"}de maus tratos
+              </Text>
+              <Text style={styles.textCardCases}>Tipo: Exame Criminal</Text>
+              <Text style={styles.textCardCases}>Criador: Admin</Text>
+              <Text style={styles.textCardCases}>Status: Em andamento</Text>
+            </View>
+          </View>
         </View>
       </View>
     </View>
@@ -72,11 +89,19 @@ const styles = StyleSheet.create({
     borderColor: "#333",
     height: 100,
     justifyContent: "center",
+    padding: 10,
+    marginTop: 10,
   },
   searchbar: {
-    width: "90%",
+    width: "80%",
+    height: 50,
+    backgroundColor: "#fff",
+    borderRadius: 8,
     marginLeft: "5%",
     marginRight: "5%",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
   },
   mainContainerCases: {
     flex: 1,
@@ -84,14 +109,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     height: "100%",
-    borderWidth: 5,
-    borderColor: "#333",
   },
   titleContainerCases: {
     fontSize: 24,
     fontWeight: "bold",
     marginTop: 40,
-
     marginRight: "15%",
   },
   filtroContainerCase: {
@@ -115,16 +137,46 @@ const styles = StyleSheet.create({
     height: 50,
   },
   titleContainerCard: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "600",
   },
   cardCases: {
     backgroundColor: "#fff",
-    width: "80%",
-    height: 100,
+    width: "90%",
+    height: 120,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
-    marginLeft: "10%",
+    marginLeft: "5%",
+    borderRadius: 5,
+  },
+  buttonVerCaso: {
+    height: 40,
+    flexDirection: "column",
+    paddingHorizontal: 5,
+  },
+  buttonLabel: {
+    fontSize: 12,
+  },
+  cardTextInfoCases: {
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    height: 65,
+    gap: 5,
+    borderLeftWidth: 1,
+    marginLeft: 20,
+    paddingLeft: 10,
+  },
+  textCardCases: {
+    fontSize: 10,
+    fontWeight: "400",
+    marginLeft: 10,
+  },
+  infoCardCases: {
+    justifyContent: "flex-start",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    width: "90%",
+    height: 40,
   },
 });
