@@ -57,6 +57,15 @@ export default function Cases() {
         </View>
         <View style={styles.cardCases}>
           <View style={styles.infoCardCases}>
+            
+            <View style={styles.cardTextInfoCases}>
+              <Text style={styles.textCardCases}>
+                <strong>Marcas de mordida em criança vítima{"\n"}de maus tratos </strong>
+              </Text>
+              <Text style={styles.textCardCases}>Tipo: Exame Criminal</Text>
+              <Text style={styles.textCardCases}>Criador: Admin</Text>
+              <Text style={styles.textCardCases}>Status: Em andamento</Text>
+            </View>
             <Button
               style={styles.buttonVerCaso}
               icon="eye"
@@ -66,14 +75,6 @@ export default function Cases() {
             >
               Ver caso
             </Button>
-            <View style={styles.cardTextInfoCases}>
-              <Text style={styles.textCardCases}>
-                Titulo: Marcas de mordida em criança vítima{"\n"}de maus tratos
-              </Text>
-              <Text style={styles.textCardCases}>Tipo: Exame Criminal</Text>
-              <Text style={styles.textCardCases}>Criador: Admin</Text>
-              <Text style={styles.textCardCases}>Status: Em andamento</Text>
-            </View>
           </View>
         </View>
       </View>
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
   buttonVerCaso: {
     height: 40,
     flexDirection: "column",
-    paddingHorizontal: 5,
+    paddingHorizontal: 0,
   },
   buttonLabel: {
     fontSize: 12,
@@ -163,9 +164,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     height: 65,
     gap: 5,
-    borderLeftWidth: 1,
-    marginLeft: 20,
-    paddingLeft: 10,
+    borderLeftColor: "#ccc",
+    paddingBottom: 10,
   },
   textCardCases: {
     fontSize: 10,
