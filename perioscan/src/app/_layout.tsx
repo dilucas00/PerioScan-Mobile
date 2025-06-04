@@ -94,11 +94,13 @@ export default function AppLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: "#000",
-    height: 80,
+    height: 65,
     borderTopWidth: 0,
     elevation: 0,
     shadowOpacity: 0,
     paddingHorizontal: 10,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
   },
   iconContainer: {
     alignItems: "center",
