@@ -1,9 +1,14 @@
 import React from "react";
 import { Text, View, StyleSheet, SafeAreaView, ScrollView } from "react-native";
-import { Searchbar, SegmentedButtons, Appbar, Button, PaperProvider,} from "react-native-paper";
-import CaseCard from "../../Components/caseCard";
-import NovoCasoModal from '../../Components/novoCasoModal';
-
+import {
+  Searchbar,
+  SegmentedButtons,
+  Appbar,
+  Button,
+  PaperProvider,
+} from "react-native-paper";
+import CaseCard from "../../components/caseCard";
+import NovoCasoModal from "../../components/novoCasoModal";
 
 export default function Cases() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -20,22 +25,22 @@ export default function Cases() {
       <View style={styles.mainContainer}>
         {/* Header com Appbar */}
         <Appbar.Header style={styles.header}>
-          <Appbar.Content 
-            title="Gerenciamento de casos" 
+          <Appbar.Content
+            title="Gerenciamento de casos"
             titleStyle={styles.headerTitle}
           />
-          <Appbar.Action 
-            icon="magnify" 
-            onPress={() => setShowSearch(!showSearch)} 
+          <Appbar.Action
+            icon="magnify"
+            onPress={() => setShowSearch(!showSearch)}
             color="#FFF"
           />
         </Appbar.Header>
 
-        <ScrollView 
+        <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContent}
         >
-          {showSearch && ( 
+          {showSearch && (
             <View style={styles.searchContainer}>
               <Searchbar
                 placeholder="Buscar caso"
@@ -73,7 +78,8 @@ export default function Cases() {
                   label: "Em andamento",
                   labelStyle: { fontSize: 12 },
                   style: {
-                    backgroundColor: value === "em andamento" ? "black" : "white",
+                    backgroundColor:
+                      value === "em andamento" ? "black" : "white",
                     borderColor: "#000",
                   },
                   checkedColor: "white",
@@ -84,7 +90,8 @@ export default function Cases() {
                   label: "Finalizados",
                   labelStyle: { fontSize: 12 },
                   style: {
-                    backgroundColor: value === "finalizados" ? "black" : "white",
+                    backgroundColor:
+                      value === "finalizados" ? "black" : "white",
                     borderColor: "#000",
                   },
                   checkedColor: "white",
@@ -93,7 +100,7 @@ export default function Cases() {
               ]}
             />
           </SafeAreaView>
-          
+
           <View style={styles.cardContainer}>
             <View style={styles.titleCardContainer}>
               <Text style={styles.titleContainerCard}>Todos os casos (8)</Text>
@@ -109,7 +116,7 @@ export default function Cases() {
                 Novo caso
               </Button>
             </View>
-            
+
             <CaseCard
               title="Marcas de mordida em criança vítima de maus tratos"
               type="Exame Criminal"
@@ -135,12 +142,11 @@ export default function Cases() {
           </View>
         </ScrollView>
 
-
-       <NovoCasoModal 
+        <NovoCasoModal
           visible={visible}
           onDismiss={hideModal}
           onConfirm={(novoCaso) => {
-            console.log('Novo caso criado:', novoCaso);
+            console.log("Novo caso criado:", novoCaso);
             hideModal();
           }}
         />
@@ -164,7 +170,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
     elevation: 0,
     shadowOpacity: 0,
-    height: 70, 
+    height: 70,
   },
   headerTitle: {
     color: "#FFF",

@@ -1,50 +1,48 @@
-import React, { useState } from 'react';
-import { View, Platform } from 'react-native';
-import { TextInput, Button } from 'react-native-paper';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useState } from "react";
+import { View, Platform } from "react-native";
+import { TextInput } from "react-native-paper";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const DateInput = () => {
-  const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
-  const [displayDate, setDisplayDate] = useState('');
+  const [date, setDate] = useState<Date>(new Date());
+  const [showPicker, setShowPicker] = useState<boolean>(false);
+  const [displayDate, setDisplayDate] = useState<string>("");
 
-interface DateInputChangeEvent {
-    type: string;
-    nativeEvent: {
-        timestamp: number;
-    };
-}
+  const onChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === "android") {
+      setShowPicker(false);
+    }
 
-const onChange = (
-    event: DateInputChangeEvent | undefined,
-    selectedDate?: Date | undefined
-) => {
-    const currentDate = selectedDate || date;
-    setShowPicker(Platform.OS === 'ios');
-    setDate(currentDate);
+    if (selectedDate) {
+      setDate(selectedDate);
+      const formattedDate = selectedDate.toLocaleDateString("pt-BR");
+      setDisplayDate(formattedDate);
+    }
+  };
 
-    // Formatar a data para exibição
-    const formattedDate = currentDate.toLocaleDateString('pt-BR');
-    setDisplayDate(formattedDate);
-};
+  const showDatePicker = () => {
+    setShowPicker(true);
+    console.log("showPicker set to true");
+  };
 
   return (
     <View>
       <TextInput
-        label="Data"
+        label="Data da ocorrencia"
         mode="outlined"
         value={displayDate}
         placeholder="Selecione uma data"
         editable={false}
-        right={<TextInput.Icon 
-          icon="calendar" 
-          onPress={() => setShowPicker(true)} 
-        />}
-        theme={{ 
-          colors: { 
-            primary: 'black',
-            placeholder: 'gray'
-          } 
+        right={<TextInput.Icon icon="calendar" onPress={showDatePicker} />}
+        style={{
+          backgroundColor: "white",
+          borderColor: "black",
+        }}
+        theme={{
+          colors: {
+            primary: "white",
+            placeholder: "black",
+          },
         }}
       />
 
@@ -52,9 +50,9 @@ const onChange = (
         <DateTimePicker
           value={date}
           mode="date"
-          display="default"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
           onChange={onChange}
-          locale="pt-BR" // Configuração para português brasileiro
+          locale="pt-BR"
         />
       )}
     </View>
