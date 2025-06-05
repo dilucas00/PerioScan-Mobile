@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Portal, Text, TextInput, Menu, Button } from 'react-native-paper';
 import { View, StyleSheet } from 'react-native';
-import DateInput from '../Components/dateInput';
+import DateInput from './dateInput';
 
 
 type NovoCasoModalProps = {
