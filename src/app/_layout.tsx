@@ -102,36 +102,40 @@ export default function AppLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: "#000",
-    height: 65,
+    height: 60,
+    borderRadius: 20,
+    margin: 10,
+    marginBottom: 8, // aumentado para descer a tabbar
     borderTopWidth: 0,
     elevation: 0,
     shadowOpacity: 0,
-    paddingHorizontal: 10,
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
+    paddingHorizontal: 0,
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center", // centraliza verticalmente
   },
   iconContainer: {
     alignItems: "center",
     justifyContent: "center",
     height: 60,
     width: 60,
+    // Remova qualquer padding/margin vertical extra aqui
   },
   icon: {
-    width: 30,
-    height: 30,
+    width: 28,
+    height: 28,
     tintColor: "white",
   },
   iconDashboard: {
-    width: 47,
-    height: 47,
+    width: 40,
+    height: 40,
     tintColor: "white",
   },
   indicator: {
-    position: "absolute",
-    bottom: -10,
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: "#fff",
+    display: "none",
   },
 });
