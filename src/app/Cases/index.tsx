@@ -123,6 +123,7 @@ export default function Cases() {
               creator="Admin"
               status="Em andamento"
               openingdate="24/04/2025"
+              id="1"
             />
 
             <CaseCard
@@ -131,6 +132,7 @@ export default function Cases() {
               creator="Admin"
               status="Finalizado"
               openingdate="14/05/2025"
+              id="2"
             />
             <CaseCard
               title="Avaliação de traumatismo dentofacial em acidente de trânsito"
@@ -138,6 +140,7 @@ export default function Cases() {
               creator="Admin"
               status="Finalizado"
               openingdate="01/05/2025"
+              id="3"
             />
           </View>
         </ScrollView>
