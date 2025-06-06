@@ -19,6 +19,14 @@ export default function AppLayout() {
           href: null,
         }}
       />
+
+      <Tabs.Screen
+        name="Cases/(cases)/[id]"
+        options={{
+          href: null,
+        }}
+      />
+
       <Tabs.Screen
         name="DashboardAdmin/index"
         options={{
@@ -107,7 +115,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     height: 60,
     width: 60,
-   
   },
   icon: {
     width: 30,

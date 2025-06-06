@@ -7,8 +7,8 @@ import {
   Button,
   PaperProvider,
 } from "react-native-paper";
-import CaseCard from "../../components/caseCard";
-import NovoCasoModal from "../../components/novoCasoModal";
+import CaseCard from "src/Components/caseCard";
+import NovoCasoModal from "src/Components/novoCasoModal";
 
 export default function Cases() {
   const [searchQuery, setSearchQuery] = React.useState("");
