@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { Text, Button, Appbar } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import CaseDetailCard from "../../../Components/caseDetailCard"; // importe o componente correto
+import CaseDetailCard from "../../../Components/caseDetailCard";
 
 export default function CaseDetails() {
   const router = useRouter();

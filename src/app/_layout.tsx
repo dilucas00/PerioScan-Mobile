@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 20,
     margin: 10,
-    marginBottom: 8, // aumentado para descer a tabbar
+    marginBottom: 8,
     borderTopWidth: 0,
     elevation: 0,
     shadowOpacity: 0,
@@ -116,14 +116,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center", // centraliza verticalmente
+    alignItems: "center",
   },
   iconContainer: {
     alignItems: "center",
     justifyContent: "center",
     height: 60,
     width: 60,
-    // Remova qualquer padding/margin vertical extra aqui
   },
   icon: {
     width: 28,
