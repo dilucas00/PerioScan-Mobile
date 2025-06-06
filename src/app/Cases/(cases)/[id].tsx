@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, Card, Divider, Button, Appbar } from "react-native-paper";
+import { Text, Button, Appbar } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import CaseDetailCard from "../../../Components/caseDetailCard"; // importe o componente correto
 
 export default function CaseDetails() {
   const router = useRouter();
@@ -19,7 +20,20 @@ export default function CaseDetails() {
     status: "finalizado",
     createdBy: "Admin",
     type: "Identificação de Vítima",
+    descricao:
+      "Descrição detalhada do caso. Aqui você pode colocar informações adicionais sobre o caso, contexto, observações ou qualquer outro detalhe relevante.",
   };
+
+  const generalInfoItems = [
+    { label: "ID do caso:", value: caseData.id },
+    { label: "Título:", value: caseData.title },
+    { label: "Data de Abertura:", value: caseData.openDate },
+    { label: "Data da Ocorrência:", value: caseData.occurrenceDate },
+    { label: "Local:", value: caseData.location },
+    { label: "Status:", value: caseData.status },
+    { label: "Criado por:", value: caseData.createdBy },
+    { label: "Tipo:", value: caseData.type },
+  ];
 
   return (
     <View style={styles.mainContainer}>
@@ -86,45 +100,16 @@ export default function CaseDetails() {
         </View>
 
         {value === "geral" && (
-          <Card style={styles.card}>
-            <Card.Content>
-              <Text style={styles.sectionTitle}>Informações Gerais</Text>
-              <Divider style={styles.divider} />
-
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>ID do caso:</Text>
-                <Text style={styles.value}>{caseData.id}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Título:</Text>
-                <Text style={styles.value}>{caseData.title}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Data de Abertura:</Text>
-                <Text style={styles.value}>{caseData.openDate}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Data da Ocorrência:</Text>
-                <Text style={styles.value}>{caseData.occurrenceDate}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Local:</Text>
-                <Text style={styles.value}>{caseData.location}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Status:</Text>
-                <Text style={styles.value}>{caseData.status}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Criado por:</Text>
-                <Text style={styles.value}>{caseData.createdBy}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.label}>Tipo:</Text>
-                <Text style={styles.value}>{caseData.type}</Text>
-              </View>
-            </Card.Content>
-          </Card>
+          <>
+            <CaseDetailCard
+              title="Informações Gerais"
+              items={generalInfoItems}
+            />
+            <CaseDetailCard
+              title="Descrição do Caso"
+              description={caseData.descricao}
+            />
+          </>
         )}
       </ScrollView>
     </View>
@@ -191,39 +176,5 @@ const styles = StyleSheet.create({
   segmentedButtonActive: {
     backgroundColor: "#000",
     borderColor: "#000",
-  },
-  card: {
-    marginHorizontal: 24,
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    elevation: 2,
-    borderRadius: 10,
-    padding: 8,
-  },
-  sectionTitle: {
-    marginBottom: 8,
-    fontWeight: "bold",
-    fontSize: 16,
-    color: "#000",
-  },
-  divider: {
-    marginBottom: 16,
-  },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  label: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-    width: 120,
-  },
-  value: {
-    fontSize: 14,
-    color: "#333",
-    flex: 1,
-    textAlign: "right",
   },
 });
