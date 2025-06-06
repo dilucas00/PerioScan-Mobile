@@ -1,14 +1,9 @@
 import React from "react";
 import { Text, View, StyleSheet, SafeAreaView, ScrollView } from "react-native";
-import {
-  Searchbar,
-  SegmentedButtons,
-  Appbar,
-  Button,
-  PaperProvider,
-} from "react-native-paper";
+import { Searchbar, Appbar, Button, PaperProvider } from "react-native-paper";
 import CaseCard from "src/Components/caseCard";
 import NovoCasoModal from "src/Components/novoCasoModal";
+import FiltroButton from "src/Components/FiltroButton"; // Importe o novo componente
 
 export default function Cases() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -20,6 +15,7 @@ export default function Cases() {
   function hideModal(): void {
     setVisible(false);
   }
+
   return (
     <PaperProvider>
       <View style={styles.mainContainer}>
@@ -55,51 +51,16 @@ export default function Cases() {
             </View>
           )}
 
-          <SafeAreaView style={styles.filtroContainer}>
-            <SegmentedButtons
-              value={value}
-              density="medium"
-              onValueChange={setValue}
-              style={styles.segmentedButtons}
-              buttons={[
-                {
-                  value: "todos",
-                  label: "Todos",
-                  labelStyle: { fontSize: 12 },
-                  style: {
-                    backgroundColor: value === "todos" ? "black" : "white",
-                    borderColor: "#000",
-                  },
-                  checkedColor: "white",
-                  uncheckedColor: "black",
-                },
-                {
-                  value: "em andamento",
-                  label: "Em andamento",
-                  labelStyle: { fontSize: 12 },
-                  style: {
-                    backgroundColor:
-                      value === "em andamento" ? "black" : "white",
-                    borderColor: "#000",
-                  },
-                  checkedColor: "white",
-                  uncheckedColor: "black",
-                },
-                {
-                  value: "finalizados",
-                  label: "Finalizados",
-                  labelStyle: { fontSize: 12 },
-                  style: {
-                    backgroundColor:
-                      value === "finalizados" ? "black" : "white",
-                    borderColor: "#000",
-                  },
-                  checkedColor: "white",
-                  uncheckedColor: "black",
-                },
-              ]}
-            />
-          </SafeAreaView>
+          {/* Substituição pelo novo componente FiltroButton */}
+          <FiltroButton
+            value={value}
+            onValueChange={setValue}
+            opcoes={[
+              { value: "todos", label: "Todos" },
+              { value: "em andamento", label: "Em andamento" },
+              { value: "finalizados", label: "Finalizados" },
+            ]}
+          />
 
           <View style={styles.cardContainer}>
             <View style={styles.titleCardContainer}>
@@ -158,6 +119,7 @@ export default function Cases() {
   );
 }
 
+// Mantenha o restante dos estilos igual
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
