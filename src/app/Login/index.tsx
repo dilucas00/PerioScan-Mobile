@@ -11,11 +11,10 @@ import { Text, TextInput, Button } from "react-native-paper";
 export default function Login() {
   const [email, setEmail] = React.useState("");
   const [senha, setSenha] = React.useState("");
+  const [mostrarSenha, setMostrarSenha] = React.useState(false);
 
   const handleLogin = () => {
-    // lógica de autenticação aqui
-    console.log("Email:", email);
-    console.log("Senha:", senha);
+    console.log("login concluido!", { email, senha });
   };
 
   return (
@@ -25,7 +24,7 @@ export default function Login() {
     >
       <View style={styles.card}>
         <Image
-          source={require("../../../assets/icone-perioscan-mobile.png")} // Altere conforme o caminho correto da sua logo
+          source={require("../../../assets/icone-perioscan-mobile.png")}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -38,14 +37,22 @@ export default function Login() {
           value={email}
           onChangeText={setEmail}
           style={styles.input}
+          autoCapitalize="none"
         />
+
         <TextInput
           label="Senha"
           mode="outlined"
-          secureTextEntry
+          secureTextEntry={!mostrarSenha}
           value={senha}
           onChangeText={setSenha}
           style={styles.input}
+          right={
+            <TextInput.Icon
+              icon={mostrarSenha ? "eye-off" : "eye"}
+              onPress={() => setMostrarSenha(!mostrarSenha)}
+            />
+          }
         />
 
         <Button
@@ -60,6 +67,7 @@ export default function Login() {
     </KeyboardAvoidingView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -111,4 +119,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-   
