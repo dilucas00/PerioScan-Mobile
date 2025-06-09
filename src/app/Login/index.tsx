@@ -18,7 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function Login() {
   const [email, setEmail] = React.useState("");
   const [senha, setSenha] = React.useState("");
-  const [mostrarSenha, setMostrarSenha] = React.useState(false);
+  const [showPassword, setshowPassword] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [erro, setErro] = React.useState("");
   const [sucesso, setSucesso] = React.useState("");
@@ -62,11 +62,15 @@ export default function Login() {
       setSucesso("Login realizado com sucesso!");
     } catch (err) {
       console.error("Erro no login:", err);
-      setErro(
-        err.message.includes("Failed to fetch")
-          ? "Não foi possível conectar ao servidor"
-          : err.message
-      );
+      if (err instanceof Error) {
+        setErro(
+          err.message.includes("Failed to fetch")
+            ? "Não foi possível conectar ao servidor"
+            : err.message
+        );
+      } else {
+        setErro("Ocorreu um erro desconhecido.");
+      }
     } finally {
       setLoading(false);
     }
@@ -98,14 +102,14 @@ export default function Login() {
         <TextInput
           label="Senha"
           mode="outlined"
-          secureTextEntry={!mostrarSenha}
+          secureTextEntry={!showPassword}
           value={senha}
           onChangeText={setSenha}
           style={styles.input}
           right={
             <TextInput.Icon
-              icon={mostrarSenha ? "eye-off" : "eye"}
-              onPress={() => setMostrarSenha(!mostrarSenha)}
+              icon={showPassword ? "eye-off" : "eye"}
+              onPress={() => setshowPassword(!showPassword)}
             />
           }
         />
@@ -153,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     padding: 24,
     borderRadius: 12,
-    width: "85%",
+    width: "100%",
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

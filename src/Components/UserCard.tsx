@@ -25,7 +25,9 @@ const UserCard: React.FC<UserCardProps> = ({
         <Text style={styles.nome}>{nome}</Text>
         <Text style={styles.info}>Email: {email}</Text>
         <Text style={styles.info}>Cargo: {cargo}</Text>
-        <Text style={styles.status}>{ativo ? "Ativo" : "Inativo"}</Text>
+        <Text style={[styles.status, { color: ativo ? "#007F00" : "#7F0000" }]}>
+          {ativo ? "Ativo" : "Inativo"}
+        </Text>
       </View>
 
       {onEdit && (
@@ -77,7 +79,6 @@ const styles = StyleSheet.create({
   },
   status: {
     fontSize: 14,
-    color: "#007F00",
     marginTop: 6,
   },
   actions: {

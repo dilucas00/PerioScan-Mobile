@@ -1,104 +1,112 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import UserCard from "src/Components/UserCard";
 import NovoUsuarioModal from "src/Components/NovoUsuarioModal";
 import AppBarHeader from "src/Components/AppBarHeader";
-import FiltroButton from "src/Components/FiltroButton";
 
 interface Usuario {
-  id: number;
-  nome: string;
+  _id: string;
+  name: string;
   email: string;
-  cargo: string;
-  ativo: boolean;
+  role: string;
+  ativo?: boolean; // pode não vir da API
 }
 
-const gerarId = () => Math.floor(1000000 + Math.random() * 9000000); // Gera ID com 7 dígitos
-
 const UserManagement = () => {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([
-    {
-      id: 1000001,
-      nome: "João Silva",
-      email: "joao@email.com",
-      cargo: "Administrador",
-      ativo: true,
-    },
-    {
-      id: 1000002,
-      nome: "Maria Souza",
-      email: "maria@email.com",
-      cargo: "Usuário",
-      ativo: false,
-    },
-    {
-      id: 1000002,
-      nome: "Maria Souza",
-      email: "maria@email.com",
-      cargo: "Usuário",
-      ativo: false,
-    },
-  ]);
-
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [modalVisivel, setModalVisivel] = useState(false);
-  const [filtro, setFiltro] = useState("todos"); // Estado para o filtro
+  const [loading, setLoading] = useState(false);
 
-  const adicionarUsuario = (novoUsuario: {
-    nome: string;
-    email: string;
-    cargo: string;
-  }) => {
-    const novo = {
-      id: gerarId(),
-      ativo: true, // por padrão, novo usuário vem como ativo
-      ...novoUsuario,
-    };
-    setUsuarios((prev) => [...prev, novo]);
+  const buscarUsuarios = async () => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(
+        "https://perioscan-back-end-fhhq.onrender.com/api/users",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          Alert.alert("Erro", "Sessão expirada. Faça login novamente.");
+        } else {
+          Alert.alert("Erro", `Erro ao buscar usuários: ${response.status}`);
+        }
+        setLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+
+      // Aqui pegamos o array correto dentro de data.data
+      if (data && Array.isArray(data.data)) {
+        // Setar ativo sempre true (se quiser), pois não vem no retorno
+        const usuariosFormatados = data.data.map((u: any) => ({
+          ...u,
+          ativo: true,
+        }));
+        setUsuarios(usuariosFormatados);
+      } else {
+        setUsuarios([]);
+      }
+    } catch (error: any) {
+      Alert.alert(
+        "Erro",
+        error.message || "Erro desconhecido ao buscar usuários"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const excluirUsuario = (id: number) => {
-    setUsuarios((prev) => prev.filter((user) => user.id !== id));
-  };
-
-  const editarUsuario = (id: number) => {
-    alert(`Editar usuário com ID: ${id}`);
-  };
+  useEffect(() => {
+    buscarUsuarios();
+  }, []);
 
   return (
     <View style={{ flex: 1 }}>
-      <AppBarHeader title="Gerenciamento de Usuario" />
-
-      <FiltroButton
-        onValueChange={setFiltro}
-        opcoes={[
-          { value: "todos", label: "Todos" },
-          { value: "perito", label: "Perito" },
-          { value: "assistente", label: "Assistente" },
-        ]}
-      />
+      <AppBarHeader title="Gerenciamento de Usuário" />
 
       <View style={styles.container}>
-        <FlatList
-          data={usuarios}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <UserCard
-              id={item.id}
-              nome={item.nome}
-              email={item.email}
-              cargo={item.cargo}
-              ativo={item.ativo}
-              onEdit={() => editarUsuario(item.id)}
-            />
-          )}
-          contentContainerStyle={styles.lista}
-        />
+        {loading ? (
+          <Text>Carregando usuários...</Text>
+        ) : usuarios.length === 0 ? (
+          <Text>Nenhum usuário encontrado.</Text>
+        ) : (
+          <FlatList
+            data={usuarios}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+              <UserCard
+                id={item._id}
+                nome={item.name}
+                email={item.email}
+                cargo={item.role}
+                ativo={item.ativo ?? true}
+                onEdit={() => alert(`Editar usuário: ${item.name}`)}
+              />
+            )}
+            contentContainerStyle={styles.lista}
+          />
+        )}
 
         <TouchableOpacity
           style={styles.botao}
@@ -110,7 +118,13 @@ const UserManagement = () => {
         <NovoUsuarioModal
           visivel={modalVisivel}
           onClose={() => setModalVisivel(false)}
-          onSalvar={adicionarUsuario}
+          onSalvar={(novoUsuario) => {
+            setUsuarios((prev) => [
+              ...prev,
+              { _id: Date.now().toString(), ativo: true, ...novoUsuario },
+            ]);
+            setModalVisivel(false);
+          }}
         />
       </View>
     </View>
@@ -124,12 +138,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#F7F7F7",
-  },
-  titulo: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
   },
   lista: {
     paddingBottom: 100,
