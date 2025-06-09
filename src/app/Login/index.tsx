@@ -6,15 +6,70 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { Text, TextInput, Button } from "react-native-paper";
+import {
+  Text,
+  TextInput,
+  Button,
+  Snackbar,
+  ActivityIndicator,
+} from "react-native-paper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Login() {
   const [email, setEmail] = React.useState("");
   const [senha, setSenha] = React.useState("");
   const [mostrarSenha, setMostrarSenha] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [erro, setErro] = React.useState("");
+  const [sucesso, setSucesso] = React.useState("");
 
-  const handleLogin = () => {
-    console.log("login concluido!", { email, senha });
+  const handleLogin = async () => {
+    setLoading(true);
+    setErro("");
+    setSucesso("");
+
+    try {
+      const response = await fetch(
+        "https://perioscan-back-end-fhhq.onrender.com/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            password: senha,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Credenciais inválidas");
+      }
+
+      if (!data.token || !data.user) {
+        throw new Error("Dados de autenticação incompletos");
+      }
+
+      // Salvando no AsyncStorage
+      await AsyncStorage.setItem("token", data.token);
+      await AsyncStorage.setItem("userId", String(data.user.id));
+      await AsyncStorage.setItem("name", data.user.name);
+      await AsyncStorage.setItem("role", data.user.role);
+
+      setSucesso("Login realizado com sucesso!");
+    } catch (err) {
+      console.error("Erro no login:", err);
+      setErro(
+        err.message.includes("Failed to fetch")
+          ? "Não foi possível conectar ao servidor"
+          : err.message
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,9 +115,28 @@ export default function Login() {
           onPress={handleLogin}
           style={styles.botao}
           labelStyle={styles.botaoTexto}
+          disabled={loading}
         >
-          Login
+          {loading ? <ActivityIndicator color="#FFF" /> : "Login"}
         </Button>
+
+        <Snackbar
+          visible={!!erro}
+          onDismiss={() => setErro("")}
+          duration={3000}
+          style={{ backgroundColor: "red" }}
+        >
+          {erro}
+        </Snackbar>
+
+        <Snackbar
+          visible={!!sucesso}
+          onDismiss={() => setSucesso("")}
+          duration={3000}
+          style={{ backgroundColor: "green" }}
+        >
+          {sucesso}
+        </Snackbar>
       </View>
     </KeyboardAvoidingView>
   );
@@ -71,7 +145,7 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000", // amarelo claro
+    backgroundColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
   },
