@@ -44,6 +44,7 @@ export default function Login() {
       );
 
       const data = await response.json();
+      console.log("Resposta do servidor:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "Credenciais inválidas");
@@ -88,7 +89,9 @@ export default function Login() {
           resizeMode="contain"
         />
         <Text style={styles.titulo}>PerioScan</Text>
-        <Text style={styles.subtitulo}>Login</Text>
+        <Text style={styles.subtitulo}>
+          Identifique-se para acessar sua conta.
+        </Text>
 
         <TextInput
           label="Email"

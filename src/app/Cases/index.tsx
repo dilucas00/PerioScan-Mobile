@@ -4,6 +4,7 @@ import { Searchbar, Appbar, Button, PaperProvider } from "react-native-paper";
 import CaseCard from "src/Components/caseCard";
 import NovoCasoModal from "src/Components/novoCasoModal";
 import FiltroButton from "src/Components/FiltroButton"; // Importe o novo componente
+import AppBarHeader from "src/Components/AppBarHeader";
 
 export default function Cases() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -20,18 +21,7 @@ export default function Cases() {
     <PaperProvider>
       <View style={styles.mainContainer}>
         {/* Header com Appbar */}
-        <Appbar.Header style={styles.header}>
-          <Appbar.Content
-            title="Gerenciamento de casos"
-            titleStyle={styles.headerTitle}
-          />
-          <Appbar.Action
-            icon="magnify"
-            onPress={() => setShowSearch(!showSearch)}
-            color="#FFF"
-          />
-        </Appbar.Header>
-
+    
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContent}

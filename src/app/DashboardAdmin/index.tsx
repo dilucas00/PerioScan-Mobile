@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, ScrollView, Image } from "react-native";
 import { LineChart, PieChart } from "react-native-chart-kit";
 import { StyleSheet } from "react-native";
+import AppBarHeader from "src/Components/AppBarHeader";
 
 
 const DashboardScreen = () => {
@@ -37,20 +38,7 @@ const DashboardScreen = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <View>
-            <Text style={styles.adminLabel}>(Administrador)</Text>
-            <Text style={styles.welcomeText}>Olá, Pedro Victor</Text>
-          </View>
-          <View style={styles.headerRight}>
-            <Image
-              source={require("../../../assets/NotificacaoIcon.png")}
-              style={styles.notificationIcon}
-            />
-          </View>
-        </View>
-      </View>
+      <AppBarHeader showBack={false} />
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.statsSection}>
@@ -178,17 +166,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  header: {
-    backgroundColor: "#000",
-    paddingTop: 40,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-  },
-  headerContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
   adminLabel: {
     color: "#fff",
     fontSize: 12,
@@ -197,11 +174,6 @@ export const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
-  },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: 10,
   },
   notificationIcon: {
     width: 24,

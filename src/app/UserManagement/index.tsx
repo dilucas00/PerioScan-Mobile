@@ -83,7 +83,6 @@ const UserManagement = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <AppBarHeader title="Gerenciamento de Usuário" />
 
       <View style={styles.container}>
         {loading ? (
