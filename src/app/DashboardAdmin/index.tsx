@@ -37,8 +37,6 @@ const DashboardScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <AppBarHeader showBack={false} />
 
       <ScrollView style={styles.scrollView}>
         <View style={styles.statsSection}>

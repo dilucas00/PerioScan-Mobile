@@ -61,7 +61,7 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
       cargo: "",
     };
 
-    if (!nome.trim()) novosErros.nome = "Nome é obrigatório";
+    if (!modoEdicao && !nome.trim()) novosErros.nome = "Nome é obrigatório";
     if (!email.trim()) novosErros.email = "Email é obrigatório";
     else if (!validarEmail(email)) novosErros.email = "Email inválido";
     if (!modoEdicao && !senha.trim()) novosErros.senha = "Senha é obrigatória";
@@ -69,6 +69,37 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
 
     setErros(novosErros);
     return !Object.values(novosErros).some((erro) => erro);
+  };
+
+  const cargoMapping = {
+    "Perito": "perito",
+    "Assistente": "assistente",
+    "Administrador": "admin"
+  };
+
+  const handleSalvar = async () => {
+    if (!validarCampos()) return;
+
+    setLoading(true);
+    try {
+      const dadosUsuario: any = {
+        name: nome,
+        email,
+        role: cargoMapping[cargo as keyof typeof cargoMapping],
+      };
+
+      if (senha.trim()) {
+        dadosUsuario.password = senha;
+      }
+
+      await onSalvar(dadosUsuario);
+      limparCampos();
+      onClose();
+    } catch (error: any) {
+      Alert.alert("Erro", error.message || "Erro ao salvar usuário");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const limparCampos = () => {
@@ -82,26 +113,6 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
       senha: "",
       cargo: "",
     });
-  };
-
-  const handleSalvar = async () => {
-    if (!validarCampos()) return;
-
-    setLoading(true);
-    try {
-      await onSalvar({
-        name: nome,
-        email,
-        password: senha,
-        role: cargo,
-      });
-      limparCampos();
-      onClose();
-    } catch (error: any) {
-      Alert.alert("Erro", error.message || "Erro ao salvar usuário");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const opcoesCargo = ["Perito", "Assistente", "Administrador"];
