@@ -3,36 +3,34 @@
     "name": "perioscan",
     "slug": "perioscan",
     "version": "1.0.0",
-    "runtimeVersion": "51.0.0", 
+    "runtimeVersion": "51.0.0",
     "orientation": "portrait",
-    "icon": "./assets/favicon.png",
+    "icon": "./assets/icone-perioscan-mobile.png",
     "userInterfaceStyle": "light",
     "scheme": "perioscan",
-    "jsEngine": "hermes", 
+    "jsEngine": "hermes",
     "splash": {
-      "image": "./assets/favicon.png",
+      "image": "./assets/icone-perioscan-mobile.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.suaempresa.perioscan"  
+      "bundleIdentifier": "com.suaempresa.perioscan"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icone-perioscan-mobile.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.suaempresa.perioscan" 
+      "package": "com.suaempresa.perioscan"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icone-perioscan-mobile.png"
     },
-    "plugins": [
-      "expo-router"
-    ],
-    "experiments": {  
+    "plugins": ["expo-router"],
+    "experiments": {
       "typedRoutes": true,
       "tsconfigPaths": true
     }

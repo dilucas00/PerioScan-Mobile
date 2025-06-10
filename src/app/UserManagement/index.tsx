@@ -6,89 +6,114 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
+  RefreshControl,
+  SafeAreaView,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialIcons } from "@expo/vector-icons";
+import { userService } from "src/services/userService";
 import UserCard from "src/Components/UserCard";
 import NovoUsuarioModal from "src/Components/NovoUsuarioModal";
-import AppBarHeader from "src/Components/AppBarHeader";
 
 interface Usuario {
   _id: string;
   name: string;
   email: string;
   role: string;
-  ativo?: boolean; // pode não vir da API
+  ativo?: boolean;
 }
 
 const UserManagement = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [modalVisivel, setModalVisivel] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [usuarioParaEditar, setUsuarioParaEditar] = useState<Usuario | null>(
+    null
+  );
 
   const buscarUsuarios = async () => {
-    setLoading(true);
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch(
-        "https://perioscan-back-end-fhhq.onrender.com/api/users",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          Alert.alert("Erro", "Sessão expirada. Faça login novamente.");
-        } else {
-          Alert.alert("Erro", `Erro ao buscar usuários: ${response.status}`);
-        }
-        setLoading(false);
-        return;
-      }
-
-      const data = await response.json();
-
-      // Aqui pegamos o array correto dentro de data.data
-      if (data && Array.isArray(data.data)) {
-        // Setar ativo sempre true (se quiser), pois não vem no retorno
-        const usuariosFormatados = data.data.map((u: any) => ({
-          ...u,
-          ativo: true,
-        }));
-        setUsuarios(usuariosFormatados);
-      } else {
-        setUsuarios([]);
-      }
+      const data = await userService.getAll();
+      setUsuarios(data);
     } catch (error: any) {
       Alert.alert(
         "Erro",
         error.message || "Erro desconhecido ao buscar usuários"
       );
+    }
+  };
+
+  const handleCriarUsuario = async (novoUsuario: {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+  }) => {
+    try {
+      await userService.create(novoUsuario);
+      await buscarUsuarios();
+      Alert.alert("Sucesso", "Usuário criado com sucesso!");
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
+  const handleAtualizarUsuario = async (
+    id: string,
+    dadosAtualizados: {
+      name: string;
+      email: string;
+      password?: string;
+      role: string;
+    }
+  ) => {
+    try {
+      await userService.update(id, dadosAtualizados);
+      await buscarUsuarios();
+      Alert.alert("Sucesso", "Usuário atualizado com sucesso!");
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
+  const handleDeletarUsuario = async (id: string) => {
+    try {
+      await userService.delete(id);
+      setUsuarios((prev) => prev.filter((user) => user._id !== id));
+      Alert.alert("Sucesso", "Usuário excluído com sucesso!");
+    } catch (error: any) {
+      Alert.alert("Erro", error.message || "Erro ao excluir usuário");
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await buscarUsuarios();
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    buscarUsuarios();
+    setLoading(true);
+    buscarUsuarios().finally(() => setLoading(false));
   }, []);
 
-  return (
-    <View style={{ flex: 1 }}>
+  const handleEditarUsuario = (usuario: Usuario) => {
+    setUsuarioParaEditar(usuario);
+    setModalVisivel(true);
+  };
 
+  return (
+    <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {loading ? (
-          <Text>Carregando usuários...</Text>
-        ) : usuarios.length === 0 ? (
-          <Text>Nenhum usuário encontrado.</Text>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000" />
+            <Text style={styles.loadingText}>Carregando usuários...</Text>
+          </View>
         ) : (
           <FlatList
             data={usuarios}
@@ -100,58 +125,103 @@ const UserManagement = () => {
                 email={item.email}
                 cargo={item.role}
                 ativo={item.ativo ?? true}
-                onEdit={() => alert(`Editar usuário: ${item.name}`)}
+                onEdit={() => handleEditarUsuario(item)}
+                onDelete={() => handleDeletarUsuario(item._id)}
               />
             )}
             contentContainerStyle={styles.lista}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <MaterialIcons name="people-outline" size={48} color="#666" />
+                <Text style={styles.emptyText}>Nenhum usuário encontrado.</Text>
+              </View>
+            }
           />
         )}
 
         <TouchableOpacity
-          style={styles.botao}
-          onPress={() => setModalVisivel(true)}
+          style={styles.botaoAdicionar}
+          onPress={() => {
+            setUsuarioParaEditar(null);
+            setModalVisivel(true);
+          }}
         >
-          <Text style={styles.textoBotao}>+ Novo Usuário</Text>
+          <MaterialIcons name="person-add" size={24} color="#FFF" />
         </TouchableOpacity>
 
         <NovoUsuarioModal
           visivel={modalVisivel}
-          onClose={() => setModalVisivel(false)}
-          onSalvar={(novoUsuario) => {
-            setUsuarios((prev) => [
-              ...prev,
-              { _id: Date.now().toString(), ativo: true, ...novoUsuario },
-            ]);
+          onClose={() => {
             setModalVisivel(false);
+            setUsuarioParaEditar(null);
           }}
+          onSalvar={async (usuario) => {
+            if (usuarioParaEditar) {
+              await handleAtualizarUsuario(usuarioParaEditar._id, usuario);
+            } else {
+              await handleCriarUsuario(usuario);
+            }
+          }}
+          usuarioParaEditar={usuarioParaEditar || undefined}
+          modoEdicao={!!usuarioParaEditar}
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 export default UserManagement;
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#F7F7F7",
   },
+  container: {
+    flex: 1,
+    backgroundColor: "#F7F7F7",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#666",
+  },
   lista: {
+    padding: 20,
     paddingBottom: 100,
   },
-  botao: {
-    backgroundColor: "#000000",
-    padding: 16,
-    borderRadius: 8,
-    position: "absolute",
-    bottom: 90,
-    alignSelf: "center",
+  emptyContainer: {
+    alignItems: "center",
+    marginTop: 40,
+    gap: 12,
   },
-  textoBotao: {
-    color: "#FFF",
-    fontWeight: "bold",
+  emptyText: {
     fontSize: 16,
+    color: "#666",
+  },
+  botaoAdicionar: {
+    backgroundColor: "#000",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    position: "absolute",
+    bottom: 100,
+    right: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
   },
 });
