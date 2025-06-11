@@ -31,6 +31,13 @@ export default function AppLayout() {
         />
 
         <Tabs.Screen
+          name="Login/index" // Adicionado para a tela de Login
+          options={{
+            href: null, // Oculta da TabBar
+          }}
+        />
+
+        <Tabs.Screen
           name="Cases/(cases)/[id]"
           options={{
             href: null,
