@@ -53,6 +53,10 @@ interface DashboardData {
   usuariosAdmin: number;
   casosRecentes: Case[];
   atividadesRecentes: Atividade[];
+  totalVitimas: number;
+  vitimasIdentificadas: number;
+  vitimasNaoIdentificadas: number;
+  vitimasPendentes: number;
 }
 
 interface ChartDataPoint {
@@ -81,6 +85,14 @@ interface Atividade {
   descricao: string;
 }
 
+interface Victim {
+  _id?: string;
+  id?: string;
+  status?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 const { width: screenWidth } = Dimensions.get("window");
 
 const DashboardScreen: React.FC = () => {
@@ -103,6 +115,10 @@ const DashboardScreen: React.FC = () => {
     usuariosAdmin: 0,
     casosRecentes: [],
     atividadesRecentes: [],
+    totalVitimas: 0,
+    vitimasIdentificadas: 0,
+    vitimasNaoIdentificadas: 0,
+    vitimasPendentes: 0,
   });
 
   const [periodoAtivo, setPeriodoAtivo] = useState<"semana" | "mes" | "ano">("mes");
@@ -149,9 +165,10 @@ const DashboardScreen: React.FC = () => {
         "Content-Type": "application/json",
       };
 
-      const [casosResponse, usuariosResponse] = await Promise.all([
+      const [casosResponse, usuariosResponse, vitimasResponse] = await Promise.all([
         fetch("https://perioscan-back-end-fhhq.onrender.com/api/cases", { headers }),
-        fetch("https://perioscan-back-end-fhhq.onrender.com/api/users", { headers })
+        fetch("https://perioscan-back-end-fhhq.onrender.com/api/users", { headers }),
+        fetch("https://perioscan-back-end-fhhq.onrender.com/api/victims", { headers })
       ]);
 
       if (casosResponse.status === 401 || usuariosResponse.status === 401) {
@@ -164,17 +181,19 @@ const DashboardScreen: React.FC = () => {
         throw new Error("Erro ao buscar dados");
       }
 
-      const [casosData, usuariosData] = await Promise.all([
+      const [casosData, usuariosData, vitimasData] = await Promise.all([
         casosResponse.json(),
-        usuariosResponse.json()
+        usuariosResponse.json(),
+        vitimasResponse.json()
       ]);
 
       const casos: Case[] = casosData.success && Array.isArray(casosData.data) ? casosData.data : [];
       const usuarios: User[] = Array.isArray(usuariosData) ? usuariosData :
                              usuariosData.data && Array.isArray(usuariosData.data) ? usuariosData.data :
                              usuariosData.users && Array.isArray(usuariosData.users) ? usuariosData.users : [];
+      const vitimas: Victim[] = vitimasData.data || [];
 
-      updateDashboardData(casos, usuarios);
+      updateDashboardData(casos, usuarios, vitimas);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error("Erro ao buscar dados do dashboard:", errorMessage);
@@ -371,7 +390,7 @@ const DashboardScreen: React.FC = () => {
     return Math.floor((hoje - inicio) / (1000 * 60 * 60 * 24));
   };
 
-  const updateDashboardData = (casos: Case[], usuarios: User[]) => {
+  const updateDashboardData = (casos: Case[], usuarios: User[], vitimas: Victim[]) => {
     const getStatusCount = (status: string) => 
       casos.filter(caso => caso.status?.toLowerCase() === status.toLowerCase()).length;
 
@@ -409,6 +428,10 @@ const DashboardScreen: React.FC = () => {
       usuariosAdmin,
       casosRecentes,
       atividadesRecentes,
+      totalVitimas: vitimas.length,
+      vitimasIdentificadas: vitimas.filter(vitima => vitima.status === "identificada").length,
+      vitimasNaoIdentificadas: vitimas.filter(vitima => vitima.status === "nao identificada").length,
+      vitimasPendentes: vitimas.filter(vitima => vitima.status === "pendente").length,
     });
 
     setChartData({
@@ -450,32 +473,10 @@ const DashboardScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      
       <ScrollView 
         style={styles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {/* Dados Gerais */}
-        <View style={styles.statsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Dados Gerais</Text>
-          </View>
-          <View style={styles.statsCards}>
-            <View style={styles.statsCard}>
-              <Text style={styles.statsNumber}>{dashboardData.casosEmAndamento}</Text>
-              <Text style={styles.statsLabel}>Em andamento</Text>
-            </View>
-            <View style={styles.statsCard}>
-              <Text style={styles.statsNumber}>{dashboardData.casosArquivados}</Text>
-              <Text style={styles.statsLabel}>Arquivados</Text>
-            </View>
-            <View style={styles.statsCard}>
-              <Text style={styles.statsNumber}>{dashboardData.casosFinalizados}</Text>
-              <Text style={styles.statsLabel}>Finalizados</Text>
-            </View>
-          </View>
-        </View>
-
         {/* Stats Summary */}
         <View style={styles.statsSummary}>
           <View style={styles.summaryCard}>
@@ -487,6 +488,13 @@ const DashboardScreen: React.FC = () => {
             <Text style={styles.summaryTitle}>Usuários</Text>
             <Text style={styles.summaryValue}>{dashboardData.totalUsuarios}</Text>
             <Text style={styles.summarySubtext}>Peritos: {dashboardData.usuariosPeritos}</Text>
+          </View>
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>Vítimas</Text>
+            <Text style={styles.summaryValue}>{dashboardData.totalVitimas}</Text>
+            <Text style={styles.summarySubtext}>
+              Identificadas: {dashboardData.vitimasIdentificadas}
+            </Text>
           </View>
         </View>
 
