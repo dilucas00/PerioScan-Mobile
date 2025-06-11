@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, Button, Appbar } from "react-native-paper";
+import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { Text, Appbar } from "react-native-paper";
+import { MaterialIcons } from "@expo/vector-icons"; // Importa o ícone MaterialIcons
 import { useRouter, useLocalSearchParams } from "expo-router";
 import CaseDetailCard from "../../../Components/caseDetailCard";
+import FiltroButton from "../../../Components/FiltroButton";
 
 export default function CaseDetails() {
   const router = useRouter();
@@ -38,66 +40,32 @@ export default function CaseDetails() {
   return (
     <View style={styles.mainContainer}>
       <Appbar.Header style={styles.header}>
-        <Appbar.BackAction color="#FFF" onPress={() => router.back()} />
+        <Appbar.BackAction color="#000000" onPress={() => router.replace("/Cases")} />
         <Appbar.Content
           title="Detalhes do caso"
           titleStyle={styles.headerTitle}
         />
       </Appbar.Header>
+
       <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.titleCardContainer}>
           <Text style={styles.titleContainerCard}>{caseData.title}</Text>
-          <Button
-            icon="pencil"
-            mode="contained"
-            buttonColor="#000"
-            textColor="#FFF"
-            style={styles.buttonEditarCaso}
-            onPress={() => {}}
-            compact
-          >
-            Editar caso
-          </Button>
+
+          {/* Removi o botão inline aqui, pois vamos usar o botão flutuante */}
         </View>
 
-        <View style={styles.filtroContainer}>
-          <Button
-            mode={value === "geral" ? "contained" : "outlined"}
-            onPress={() => setValue("geral")}
-            style={[
-              styles.segmentedButton,
-              value === "geral" && styles.segmentedButtonActive,
-            ]}
-            textColor={value === "geral" ? "#FFF" : "#000"}
-          >
-            Geral
-          </Button>
-          <Button
-            mode={value === "evidências" ? "contained" : "outlined"}
-            onPress={() => setValue("evidências")}
-            style={[
-              styles.segmentedButton,
-              value === "evidências" && styles.segmentedButtonActive,
-            ]}
-            textColor={value === "evidências" ? "#FFF" : "#000"}
-          >
-            Evidências
-          </Button>
-          <Button
-            mode={value === "relatórios" ? "contained" : "outlined"}
-            onPress={() => setValue("relatórios")}
-            style={[
-              styles.segmentedButton,
-              value === "relatórios" && styles.segmentedButtonActive,
-            ]}
-            textColor={value === "relatórios" ? "#FFF" : "#000"}
-          >
-            Relatórios
-          </Button>
-        </View>
+        <FiltroButton
+          value={value}
+          onValueChange={setValue}
+          opcoes={[
+            { value: "geral", label: "Geral" },
+            { value: "evidências", label: "Evidências" },
+            { value: "relatórios", label: "Relatórios" },
+          ]}
+        />
 
         {value === "geral" && (
           <>
@@ -112,6 +80,17 @@ export default function CaseDetails() {
           </>
         )}
       </ScrollView>
+
+      {/* Botão flutuante de editar */}
+      <TouchableOpacity
+        style={styles.floatingEditButton}
+        onPress={() => {
+          // Coloque aqui o que deve acontecer ao clicar para editar o caso
+          console.log("Editar caso clicado");
+        }}
+      >
+        <MaterialIcons name="edit" size={28} color="#FFF" />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -119,16 +98,17 @@ export default function CaseDetails() {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#F7F7F7f",
+    marginBottom: 60,
   },
   header: {
-    backgroundColor: "#000",
+    backgroundColor: "#F7F7F7",
     elevation: 0,
     shadowOpacity: 0,
     height: 70,
   },
   headerTitle: {
-    color: "#FFF",
+    color: "#000000",
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
@@ -142,39 +122,32 @@ const styles = StyleSheet.create({
   titleCardContainer: {
     paddingHorizontal: 24,
     paddingBottom: 16,
-    flexDirection: "row",
-    alignItems: "center",
     marginTop: 24,
+    alignItems: "center",
   },
   titleContainerCard: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: "600",
     color: "#333",
+    textAlign: "center",
   },
-  buttonEditarCaso: {
-    marginLeft: "auto",
-    borderRadius: 5,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    height: 35,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  filtroContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 16,
-  },
-  segmentedButton: {
-    borderRadius: 5,
-    borderColor: "#000",
-    marginHorizontal: 2,
-    minWidth: 90,
-  },
-  segmentedButtonActive: {
+
+  // Estilo do botão flutuante de editar
+  floatingEditButton: {
     backgroundColor: "#000",
-    borderColor: "#000",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    position: "absolute",
+    bottom: 40,
+    right: 20,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
   },
 });

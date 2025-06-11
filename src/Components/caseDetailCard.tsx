@@ -19,7 +19,7 @@ const CaseDetailCard: React.FC<CaseDetailCardProps> = ({
       <Divider style={styles.divider} />
       {items &&
         items.map((item, idx) => (
-          <View style={styles.infoRow} key={idx}>
+          <View style={styles.infoColumn} key={idx}>
             <Text style={styles.label}>{item.label}</Text>
             <Text style={styles.value}>{item.value}</Text>
           </View>
@@ -47,22 +47,22 @@ const styles = StyleSheet.create({
   divider: {
     marginBottom: 16,
   },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
+  // Agora em coluna (label em cima, value embaixo)
+  infoColumn: {
+    flexDirection: "column",
+    marginBottom: 12,
   },
   label: {
     fontSize: 14,
     color: "#666",
     fontWeight: "500",
-    width: 120,
+    marginBottom: 2,
   },
   value: {
     fontSize: 14,
     color: "#333",
-    flex: 1,
-    textAlign: "right",
+    // deixa o texto quebrar linha se for muito longo
+    flexWrap: "wrap",
   },
   descricaoText: {
     fontSize: 14,

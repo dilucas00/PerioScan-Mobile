@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   content: {
-    flexDirection: "row",
+    flexDirection: "column",
     padding: 16,
   },
   textContainer: {
