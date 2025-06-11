@@ -86,7 +86,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
           error={!!errors.title}
           outlineColor="#DDD"
           activeOutlineColor="#000"
-          theme={{ colors: { primary: "#000", onSurfaceVariant: "#666" } }}
+          theme={{ colors: { primary: "#000", onSurfaceVariant: "#000" } }}
         />
         {errors.title ? (
           <Text style={styles.errorText}>{errors.title}</Text>
@@ -108,7 +108,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
           error={!!errors.content}
           outlineColor="#DDD"
           activeOutlineColor="#000"
-          theme={{ colors: { primary: "#000", onSurfaceVariant: "#666" } }}
+          theme={{ colors: { primary: "#000", onSurfaceVariant: "#000" } }}
         />
         {errors.content ? (
           <Text style={styles.errorText}>{errors.content}</Text>
@@ -124,7 +124,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
           style={styles.input}
           outlineColor="#DDD"
           activeOutlineColor="#000"
-          theme={{ colors: { primary: "#000", onSurfaceVariant: "#666" } }}
+          theme={{ colors: { primary: "#000", onSurfaceVariant: "#000" } }}
         />
 
         <TextInput
@@ -137,7 +137,7 @@ const ReportModal: React.FC<ReportModalProps> = ({
           style={styles.input}
           outlineColor="#DDD"
           activeOutlineColor="#000"
-          theme={{ colors: { primary: "#000", onSurfaceVariant: "#666" } }}
+          theme={{ colors: { primary: "#000", onSurfaceVariant: "#000" } }}
         />
 
         <Text style={styles.segmentedLabel}>Status do Relatório:</Text>
@@ -228,6 +228,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "#fff",
     marginBottom: 16,
+    color: "#000",
   },
   errorText: {
     color: "#FF3B30",

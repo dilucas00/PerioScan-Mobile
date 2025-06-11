@@ -1,9 +1,19 @@
 "use client";
 
-import type React from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, Modal, Portal, Button } from "react-native-paper";
+import React from "react";
+import { View, StyleSheet, ScrollView, Alert, Platform } from "react-native";
+import {
+  Text,
+  Modal,
+  Portal,
+  Button,
+  IconButton,
+  ActivityIndicator,
+} from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 
 interface Report {
   id: string;
@@ -29,7 +39,8 @@ const ReportViewModal: React.FC<ReportViewModalProps> = ({
   report,
   onEdit,
 }) => {
-  if (!report) return null;
+  const [pdfLoading, setPdfLoading] = React.useState(false);
+  const [reportDetails, setReportDetails] = React.useState<any>(null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -43,12 +54,283 @@ const ReportViewModal: React.FC<ReportViewModalProps> = ({
   };
 
   const getStatusColor = () => {
-    return report.status === "finalizado" ? "#2E7D32" : "#E65100";
+    return report?.status === "finalizado" ? "#2E7D32" : "#E65100";
   };
 
   const getStatusBackground = () => {
-    return report.status === "finalizado" ? "#E8F5E9" : "#FFF3E0";
+    return report?.status === "finalizado" ? "#E8F5E9" : "#FFF3E0";
   };
+
+  const sanitizeFileName = (fileName: string) => {
+    return fileName
+      .replace(/[^a-zA-Z0-9\s]/g, "") // Remove caracteres especiais
+      .replace(/\s+/g, "_") // Substitui espaços por underscore
+      .substring(0, 50); // Limita o tamanho
+  };
+
+  // Função para buscar detalhes completos do relatório
+  const fetchReportDetails = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token || !report?.id) return;
+
+      console.log("Buscando detalhes completos do relatório...");
+      const response = await fetch(
+        `https://perioscan-back-end-fhhq.onrender.com/api/reports/${report.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Detalhes completos do relatório:", data);
+        setReportDetails(data);
+        return data;
+      } else {
+        console.log("Erro ao buscar detalhes:", response.status);
+        return null;
+      }
+    } catch (error) {
+      console.error("Erro ao buscar detalhes do relatório:", error);
+      return null;
+    }
+  };
+
+  const handleGeneratePDF = async () => {
+    setPdfLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Erro", "Você precisa estar autenticado para gerar PDF");
+        return;
+      }
+
+      console.log("=== INICIANDO GERAÇÃO DE PDF ===");
+      console.log("Report ID:", report?.id);
+      console.log("Report Title:", report?.title);
+
+      // Verificar se o relatório tem dados necessários
+      if (!report?.id) {
+        throw new Error("ID do relatório não encontrado");
+      }
+
+      // Buscar detalhes completos antes de tentar gerar o PDF
+      const fullReportData = await fetchReportDetails();
+      if (!fullReportData) {
+        throw new Error(
+          "Não foi possível carregar os detalhes completos do relatório"
+        );
+      }
+
+      const url = `https://perioscan-back-end-fhhq.onrender.com/api/reports/${report.id}/pdf`;
+      console.log("URL da requisição:", url);
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/pdf",
+        },
+      });
+
+      console.log("Status da resposta:", response.status);
+      console.log(
+        "Headers da resposta:",
+        Object.fromEntries(response.headers.entries())
+      );
+
+      if (!response.ok) {
+        let errorMessage = "Erro ao gerar PDF";
+        try {
+          const errorData = await response.json();
+          console.log("Dados do erro:", errorData);
+
+          // Tratar erro específico do backend
+          if (
+            errorData.message &&
+            errorData.message.includes("Cannot read properties of null")
+          ) {
+            errorMessage =
+              "Erro no servidor: Dados incompletos no relatório ou usuário não encontrado. " +
+              "Isso pode acontecer se:\n" +
+              "• O usuário que criou o relatório foi removido\n" +
+              "• O caso associado foi excluído\n" +
+              "• Há dados corrompidos no banco\n\n" +
+              "Contate o administrador do sistema.";
+          } else {
+            errorMessage =
+              errorData.message ||
+              errorData.error ||
+              `Erro ${response.status}: ${response.statusText}`;
+          }
+        } catch (parseError) {
+          console.log("Erro ao fazer parse da resposta de erro:", parseError);
+          errorMessage = `Erro ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Verificar se a resposta é realmente um PDF
+      const contentType = response.headers.get("content-type");
+      console.log("Content-Type:", contentType);
+
+      if (!contentType || !contentType.includes("application/pdf")) {
+        // Se não for PDF, tentar ler como JSON para ver se há erro
+        try {
+          const textResponse = await response.text();
+          console.log("Resposta não-PDF:", textResponse);
+          throw new Error(
+            "O servidor retornou um formato inválido. Esperado: PDF, Recebido: " +
+              contentType
+          );
+        } catch (textError) {
+          throw new Error("Formato de resposta inválido");
+        }
+      }
+
+      // Para web, usar download direto
+      if (Platform.OS === "web") {
+        console.log("Processando download para web...");
+        const blob = await response.blob();
+        console.log("Blob criado, tamanho:", blob.size);
+
+        if (blob.size === 0) {
+          throw new Error("PDF gerado está vazio");
+        }
+
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const fileName = `relatorio_${sanitizeFileName(
+          report?.title
+        )}_${new Date().getTime()}.pdf`;
+
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        console.log("Download iniciado para:", fileName);
+        Alert.alert("Sucesso", "PDF baixado com sucesso!");
+      } else {
+        // Para mobile, usar FileSystem
+        console.log("Processando download para mobile...");
+        const blob = await response.blob();
+
+        if (blob.size === 0) {
+          throw new Error("PDF gerado está vazio");
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = async () => {
+          try {
+            const base64Data = (reader.result as string).split(",")[1];
+            const fileName = `relatorio_${sanitizeFileName(
+              report?.title
+            )}_${new Date().getTime()}.pdf`;
+            const fileUri = `${FileSystem.documentDirectory}${fileName}`;
+
+            await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+
+            console.log("Arquivo salvo em:", fileUri);
+
+            // Verificar se o compartilhamento está disponível
+            const isAvailable = await Sharing.isAvailableAsync();
+            if (isAvailable) {
+              await Sharing.shareAsync(fileUri, {
+                mimeType: "application/pdf",
+                dialogTitle: "Salvar PDF do Relatório",
+              });
+            } else {
+              Alert.alert("Sucesso", `PDF salvo em: ${fileUri}`);
+            }
+          } catch (error) {
+            console.error("Erro ao salvar PDF:", error);
+            Alert.alert("Erro", "Erro ao salvar o arquivo PDF");
+          }
+        };
+
+        reader.onerror = () => {
+          console.error("Erro ao ler blob");
+          Alert.alert("Erro", "Erro ao processar o arquivo PDF");
+        };
+
+        reader.readAsDataURL(blob);
+      }
+    } catch (error: any) {
+      console.error("=== ERRO NA GERAÇÃO DE PDF ===");
+      console.error("Erro completo:", error);
+
+      let userMessage = "Erro ao gerar PDF";
+
+      if (error.message) {
+        userMessage = error.message;
+      }
+
+      Alert.alert("Erro", userMessage);
+    } finally {
+      setPdfLoading(false);
+      console.log("=== FIM DA GERAÇÃO DE PDF ===");
+    }
+  };
+
+  const requestStoragePermission = () => {
+    Alert.alert(
+      "Permissão de Armazenamento",
+      "Este aplicativo precisa acessar o armazenamento do seu dispositivo para salvar o PDF. Deseja continuar?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Permitir",
+          onPress: handleGeneratePDF,
+        },
+      ]
+    );
+  };
+
+  const showTechnicalDetails = () => {
+    const details = `
+Detalhes Técnicos do Relatório:
+
+ID: ${report?.id}
+Título: ${report?.title}
+Status: ${report?.status}
+Criado em: ${report?.createdAt}
+
+${
+  reportDetails
+    ? `
+Dados completos carregados: Sim
+Usuário criador: ${reportDetails.data?.createdBy?.name || "Não encontrado"}
+Caso associado: ${reportDetails.data?.case?.title || "Não encontrado"}
+`
+    : "Dados completos: Não carregados"
+}
+
+Este erro geralmente indica que há dados faltando no banco de dados.
+    `.trim();
+
+    Alert.alert("Detalhes Técnicos", details);
+  };
+
+  // Buscar detalhes quando o modal abrir
+  React.useEffect(() => {
+    if (visible && report) {
+      fetchReportDetails();
+    }
+  }, [visible, report]);
+
+  if (!report) return null;
 
   return (
     <Portal>
@@ -58,21 +340,30 @@ const ReportViewModal: React.FC<ReportViewModalProps> = ({
         contentContainerStyle={styles.modalContainer}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Header */}
+          {/* Header com botão X */}
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <MaterialIcons name="description" size={24} color="#000" />
               <Text style={styles.modalTitle}>Visualizar Relatório</Text>
             </View>
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusBackground() },
-              ]}
-            >
-              <Text style={[styles.statusText, { color: getStatusColor() }]}>
-                {report.status === "finalizado" ? "Finalizado" : "Rascunho"}
-              </Text>
+            <View style={styles.headerRight}>
+              <View
+                style={[
+                  styles.statusBadge,
+                  { backgroundColor: getStatusBackground() },
+                ]}
+              >
+                <Text style={[styles.statusText, { color: getStatusColor() }]}>
+                  {report.status === "finalizado" ? "Finalizado" : "Rascunho"}
+                </Text>
+              </View>
+              <IconButton
+                icon="close"
+                size={20}
+                iconColor="#666"
+                onPress={onDismiss}
+                style={styles.closeButton}
+              />
             </View>
           </View>
 
@@ -146,15 +437,39 @@ const ReportViewModal: React.FC<ReportViewModalProps> = ({
                 Editar
               </Button>
             )}
+
             <Button
               mode="contained"
-              onPress={onDismiss}
-              style={styles.closeButton}
-              buttonColor="#000"
+              onPress={
+                Platform.OS === "web"
+                  ? handleGeneratePDF
+                  : requestStoragePermission
+              }
+              style={styles.pdfButton}
+              buttonColor="#DC2626"
               textColor="#FFF"
+              icon="file-pdf-box"
+              disabled={pdfLoading}
               labelStyle={{ fontWeight: "bold" }}
             >
-              Fechar
+              {pdfLoading ? (
+                <ActivityIndicator color="#FFF" size="small" />
+              ) : (
+                "Exportar PDF"
+              )}
+            </Button>
+          </View>
+
+          {/* Botão de detalhes técnicos para debug */}
+          <View style={styles.debugButtons}>
+            <Button
+              mode="text"
+              onPress={showTechnicalDetails}
+              textColor="#666"
+              icon="information"
+              labelStyle={{ fontSize: 12 }}
+            >
+              Ver Detalhes Técnicos
             </Button>
           </View>
         </ScrollView>
@@ -191,11 +506,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
   },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#000",
     marginLeft: 8,
+  },
+  closeButton: {
+    margin: 0,
+    backgroundColor: "#F5F5F5",
+    width: 32,
+    height: 32,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -265,9 +591,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
   },
-  closeButton: {
+  pdfButton: {
     flex: 1,
     borderRadius: 8,
+  },
+  debugButtons: {
+    marginTop: 16,
+    alignItems: "center",
   },
 });
 
