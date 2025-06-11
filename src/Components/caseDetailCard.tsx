@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 14,
-    color: "#333",
+    color: "#000000", // Alterado para preto
     // deixa o texto quebrar linha se for muito longo
     flexWrap: "wrap",
   },

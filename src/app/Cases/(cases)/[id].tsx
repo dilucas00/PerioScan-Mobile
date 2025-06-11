@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { Text, Appbar } from "react-native-paper";
-import { MaterialIcons } from "@expo/vector-icons"; // Importa o ícone MaterialIcons
+import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import CaseDetailCard from "../../../Components/caseDetailCard";
 import FiltroButton from "../../../Components/FiltroButton";
@@ -42,10 +42,21 @@ export default function CaseDetails() {
   return (
     <View style={styles.mainContainer}>
       <Appbar.Header style={styles.header}>
-        <Appbar.BackAction color="#000000" onPress={() => router.replace("/Cases")} />
+        <Appbar.BackAction
+          color="#000000"
+          onPress={() => router.replace("/Cases")}
+        />
         <Appbar.Content
           title="Detalhes do caso"
-          titleStyle={styles.headerTitle}
+          titleStyle={[
+            styles.headerTitle,
+            {
+              textAlign: "center",
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 30,
+            },
+          ]}
         />
       </Appbar.Header>
 
@@ -53,12 +64,6 @@ export default function CaseDetails() {
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.titleCardContainer}>
-          <Text style={styles.titleContainerCard}>{caseData.title}</Text>
-
-          {/* Removi o botão inline aqui, pois vamos usar o botão flutuante */}
-        </View>
-
         <FiltroButton
           value={value}
           onValueChange={setValue}
@@ -82,20 +87,15 @@ export default function CaseDetails() {
           </>
         )}
 
-        {value === "evidências" && (
-          <CardEvidence />
-        )}
+        {value === "evidências" && <CardEvidence />}
 
-        {value === "relatórios" && (
-          <CardRelatorios />
-        )}
+        {value === "relatórios" && <CardRelatorios />}
       </ScrollView>
 
       {/* Botão flutuante de editar */}
       <TouchableOpacity
         style={styles.floatingEditButton}
         onPress={() => {
-          // Coloque aqui o que deve acontecer ao clicar para editar o caso
           console.log("Editar caso clicado");
         }}
       >
@@ -121,7 +121,6 @@ const styles = StyleSheet.create({
     color: "#000000",
     fontSize: 18,
     fontWeight: "bold",
-    textAlign: "center",
   },
   scrollContainer: {
     flex: 1,
@@ -129,18 +128,18 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 20,
   },
-  titleCardContainer: {
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-    marginTop: 24,
-    alignItems: "center",
-  },
-  titleContainerCard: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#333",
-    textAlign: "center",
-  },
+  // titleCardContainer: {
+  //   paddingHorizontal: 24,
+  //   paddingBottom: 16,
+  //   marginTop: 24,
+  //   alignItems: "center",
+  // },
+  // titleContainerCard: {
+  //   fontSize: 15,
+  //   fontWeight: "600",
+  //   color: "#333",
+  //   textAlign: "center",
+  // },
 
   // Estilo do botão flutuante de editar
   floatingEditButton: {
