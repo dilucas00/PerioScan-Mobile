@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   cargoContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#fff",
     paddingHorizontal: 1,
     paddingVertical: 4,
     borderRadius: 6,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 4,
     borderRadius: 6,
     minWidth: 80,
     justifyContent: "center",
@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: 8,
+    marginTop: 12,
   },
   editButton: {
     backgroundColor: "#000",

@@ -79,7 +79,7 @@ const CaseCard: React.FC<CaseCardProps> = ({
             style={styles.button}
             labelStyle={styles.buttonLabel}
             compact
-            onPress={handleViewCase} // Adicione o evento de navegação
+            onPress={handleViewCase}
           >
             Ver caso
           </Button>

@@ -20,11 +20,7 @@ export default function Cases() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Função para obter o token JWT (ajuste conforme onde você armazena o token)
   async function getToken() {
-    // Exemplo usando AsyncStorage:
-    // return await AsyncStorage.getItem("token");
-    // Ajuste conforme seu projeto:
     return localStorage.getItem("token");
   }
 

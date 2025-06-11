@@ -2,14 +2,17 @@ import React, { useState } from "react";
 import {
   Modal,
   View,
-  Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Alert,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import {
+  TextInput as PaperTextInput,
+  RadioButton,
+  Text as PaperText,
+} from "react-native-paper";
 
 interface NovoUsuarioModalProps {
   visivel: boolean;
@@ -72,9 +75,9 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
   };
 
   const cargoMapping = {
-    "Perito": "perito",
-    "Assistente": "assistente",
-    "Administrador": "admin"
+    Perito: "perito",
+    Assistente: "assistente",
+    Administrador: "admin",
   };
 
   const handleSalvar = async () => {
@@ -127,100 +130,91 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
               size={24}
               color="#000"
             />
-            <Text style={styles.titulo}>
+            <PaperText style={styles.titulo}>
               {modoEdicao ? "Editar Usuário" : "Novo Usuário"}
-            </Text>
+            </PaperText>
           </View>
 
           <View style={styles.inputContainer}>
-            <View style={styles.inputIconContainer}>
-              <MaterialIcons name="person" size={20} color="#666" />
-              <TextInput
-                style={[styles.input, erros.nome ? styles.inputError : null]}
-                placeholder="Nome"
-                value={nome}
-                onChangeText={(text) => {
-                  setNome(text);
-                  setErros({ ...erros, nome: "" });
-                }}
-              />
-            </View>
-            {erros.nome ? <Text style={styles.erro}>{erros.nome}</Text> : null}
+            <PaperTextInput
+              label="Nome"
+              value={nome}
+              onChangeText={(text) => {
+                setNome(text);
+                setErros({ ...erros, nome: "" });
+              }}
+              mode="outlined"
+              style={styles.paperInput}
+              error={!!erros.nome}
+              left={<PaperTextInput.Icon icon="account" />}
+            />
+            {erros.nome ? (
+              <PaperText style={styles.erro}>{erros.nome}</PaperText>
+            ) : null}
           </View>
 
           <View style={styles.inputContainer}>
-            <View style={styles.inputIconContainer}>
-              <MaterialIcons name="email" size={20} color="#666" />
-              <TextInput
-                style={[styles.input, erros.email ? styles.inputError : null]}
-                placeholder="Email"
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  setErros({ ...erros, email: "" });
-                }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
+            <PaperTextInput
+              label="Email"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                setErros({ ...erros, email: "" });
+              }}
+              mode="outlined"
+              style={styles.paperInput}
+              error={!!erros.email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              left={<PaperTextInput.Icon icon="email" />}
+            />
             {erros.email ? (
-              <Text style={styles.erro}>{erros.email}</Text>
+              <PaperText style={styles.erro}>{erros.email}</PaperText>
             ) : null}
           </View>
 
           {!modoEdicao && (
             <View style={styles.inputContainer}>
-              <View style={styles.inputIconContainer}>
-                <MaterialIcons name="lock" size={20} color="#666" />
-                <TextInput
-                  style={[styles.input, erros.senha ? styles.inputError : null]}
-                  placeholder="Senha"
-                  value={senha}
-                  onChangeText={(text) => {
-                    setSenha(text);
-                    setErros({ ...erros, senha: "" });
-                  }}
-                  secureTextEntry
-                />
-              </View>
+              <PaperTextInput
+                label="Senha"
+                value={senha}
+                onChangeText={(text) => {
+                  setSenha(text);
+                  setErros({ ...erros, senha: "" });
+                }}
+                mode="outlined"
+                style={styles.paperInput}
+                error={!!erros.senha}
+                secureTextEntry
+                left={<PaperTextInput.Icon icon="lock" />}
+              />
               {erros.senha ? (
-                <Text style={styles.erro}>{erros.senha}</Text>
+                <PaperText style={styles.erro}>{erros.senha}</PaperText>
               ) : null}
             </View>
           )}
 
-          <Text style={styles.subtitulo}>Cargo:</Text>
-          <View style={styles.opcoesCargo}>
-            {opcoesCargo.map((opcao) => (
-              <TouchableOpacity
-                key={opcao}
-                style={[
-                  styles.bolinha,
-                  cargo === opcao && styles.bolinhaSelecionada,
-                  erros.cargo ? styles.bolinhaError : null,
-                ]}
-                onPress={() => {
-                  setCargo(opcao);
-                  setErros({ ...erros, cargo: "" });
-                }}
-              >
-                <MaterialIcons
-                  name={cargo === opcao ? "check" : "work"}
-                  size={20}
-                  color={cargo === opcao ? "#FFF" : "#666"}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
-          <View style={styles.labelCargoContainer}>
-            {opcoesCargo.map((opcao) => (
-              <Text key={opcao} style={styles.labelCargo}>
-                {opcao}
-              </Text>
-            ))}
-          </View>
+          <PaperText style={styles.subtitulo}>Cargo:</PaperText>
+          <RadioButton.Group
+            onValueChange={(newValue) => {
+              setCargo(newValue);
+              setErros({ ...erros, cargo: "" });
+            }}
+            value={cargo}
+          >
+            <View style={styles.radioGroup}>
+              {opcoesCargo.map((opcao) => (
+                <View key={opcao} style={styles.radioItem}>
+                  <RadioButton value={opcao} />
+                  <PaperText style={{ marginTop: -5 }}>{opcao}</PaperText>
+                </View>
+              ))}
+            </View>
+          </RadioButton.Group>
           {erros.cargo ? (
-            <Text style={[styles.erro, styles.erroCargo]}>{erros.cargo}</Text>
+            <PaperText style={[styles.erro, styles.erroCargo]}>
+              {erros.cargo}
+            </PaperText>
           ) : null}
 
           <View style={styles.botoes}>
@@ -233,7 +227,7 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
               disabled={loading}
             >
               <MaterialIcons name="close" size={20} color="#FFF" />
-              <Text style={styles.textoBotao}>Cancelar</Text>
+              <PaperText style={styles.textoBotao}>Cancelar</PaperText>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.botaoSalvar, loading && styles.botaoDesabilitado]}
@@ -249,9 +243,9 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
                     size={20}
                     color="#FFF"
                   />
-                  <Text style={styles.textoBotao}>
+                  <PaperText style={styles.textoBotao}>
                     {modoEdicao ? "Atualizar" : "Salvar"}
-                  </Text>
+                  </PaperText>
                 </>
               )}
             </TouchableOpacity>
@@ -293,27 +287,15 @@ const styles = StyleSheet.create({
   subtitulo: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 6,
+    marginTop: 10,
+    marginBottom: 5,
     color: "#000",
   },
   inputContainer: {
     marginBottom: 10,
   },
-  inputIconContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F5F5F5",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  input: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  inputError: {
-    borderColor: "#FF3B30",
+  paperInput: {
+    marginBottom: 0,
   },
   erro: {
     color: "#FF3B30",
@@ -324,37 +306,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
   },
-  opcoesCargo: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 6,
-  },
-  bolinha: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#666",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  bolinhaSelecionada: {
-    backgroundColor: "#000",
-    borderColor: "#000",
-  },
-  bolinhaError: {
-    borderColor: "#FF3B30",
-  },
-  labelCargoContainer: {
+  radioGroup: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 10,
+    flexWrap: "wrap",
   },
-  labelCargo: {
-    fontSize: 12,
-    textAlign: "center",
-    width: 70,
-    color: "#666",
+  radioItem: {
+    flexDirection: "column",
+    alignItems: "center",
+    marginHorizontal: 10,
+    marginBottom: 10,
   },
   botoes: {
     flexDirection: "row",

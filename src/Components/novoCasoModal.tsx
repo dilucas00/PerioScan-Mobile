@@ -7,8 +7,11 @@ import {
   Menu,
   Button,
   useTheme,
+  IconButton,
 } from "react-native-paper";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const darkTextTheme = {
   colors: {
@@ -21,16 +24,6 @@ const darkTextTheme = {
   },
 };
 
-const DateInput = () => (
-  <TextInput
-    label="Data do caso (Placeholder)"
-    mode="outlined"
-    style={styles.input}
-    theme={darkTextTheme}
-    editable={false}
-  />
-);
-
 type NovoCasoModalProps = {
   visible: boolean;
   onDismiss: () => void;
@@ -39,6 +32,7 @@ type NovoCasoModalProps = {
     localizacao: string;
     tipo: string;
     status: string;
+    data: Date;
   }) => void;
 };
 
@@ -54,6 +48,21 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
   const [menuTipoVisible, setMenuTipoVisible] = React.useState(false);
   const [menuStatusVisible, setMenuStatusVisible] = React.useState(false);
   const [descricao, setDescricao] = React.useState("");
+  const [dataCaso, setDataCaso] = React.useState<Date | undefined>(undefined);
+  const [isDatePickerVisible, setDatePickerVisibility] = React.useState(false);
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirmDate = (date: Date) => {
+    setDataCaso(date);
+    hideDatePicker();
+  };
 
   const tiposCaso = [
     "Exame Criminal",
@@ -64,17 +73,64 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
 
   const statusCasos = ["Em andamento", "Finalizado", "Arquivado"];
 
-  const handleConfirm = () => {
-    onConfirm({
-      titulo,
-      localizacao,
-      tipo: tipoCaso,
-      status: statusCaso,
-    });
-    setTitulo("");
-    setLocalizacao("");
-    setTipoCaso("");
-    setStatusCaso("");
+  const handleConfirm = async () => {
+    if (!titulo || !localizacao || !descricao) {
+      console.error("Por favor, preencha todos os campos obrigatórios: Título, Localização e Descrição.");
+      return;
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        console.error("Token de autenticação não encontrado. Por favor, faça login novamente.");
+        return;
+      }
+
+      const caseData = {
+        title: titulo,
+        description: descricao,
+        location: localizacao,
+        type: tipoCaso || "nao especificado",
+        occurrenceDate: dataCaso ? dataCaso.toISOString() : undefined,
+        status: statusCaso || "em andamento",
+      };
+
+      const response = await fetch(
+        "https://perioscan-back-end-fhhq.onrender.com/api/cases",
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(caseData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Erro ao criar caso");
+      }
+
+      const data = await response.json();
+      console.log("Caso criado com sucesso:", data);
+      onConfirm({
+        titulo,
+        localizacao,
+        tipo: tipoCaso,
+        status: statusCaso,
+        data: dataCaso || new Date(),
+      });
+      setTitulo("");
+      setLocalizacao("");
+      setTipoCaso("");
+      setStatusCaso("");
+      setDataCaso(undefined);
+      setDescricao("");
+      onDismiss(); // Fecha o modal após o sucesso
+    } catch (error: any) {
+      console.error("Erro ao criar caso:", error.message);
+    }
   };
 
   return (
@@ -142,7 +198,31 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
           theme={darkTextTheme}
         />
 
-        <DateInput />
+        <TouchableOpacity onPress={showDatePicker}>
+          <TextInput
+            label="Data do caso"
+            mode="outlined"
+            value={dataCaso ? dataCaso.toLocaleDateString("pt-BR") : ""}
+            editable={false}
+            style={[styles.input, { color: "black" }]}
+            right={
+              <TextInput.Icon
+                icon="calendar"
+                onPress={showDatePicker}
+                color="black"
+              />
+            }
+            theme={darkTextTheme}
+          />
+        </TouchableOpacity>
+
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          onConfirm={handleConfirmDate}
+          onCancel={hideDatePicker}
+          locale="pt_BR"
+        />
 
         {/* Menu para Status do Caso */}
         <Menu
@@ -154,7 +234,7 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
               mode="outlined"
               value={statusCaso}
               editable={false}
-              style={[styles.input, { color: "black" }]}
+              style={[styles.input, { color: "#fff" }]}
               right={
                 <TextInput.Icon
                   icon="menu-down"
@@ -175,7 +255,7 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
                 setMenuStatusVisible(false);
               }}
               title={status}
-              titleStyle={{ color: "black" }}
+              titleStyle={{ color: "#fff" }}
             />
           ))}
         </Menu>
