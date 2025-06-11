@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -24,6 +24,17 @@ export default function Login() {
   const [loading, setLoading] = React.useState(false);
   const [erro, setErro] = React.useState("");
   const [sucesso, setSucesso] = React.useState("");
+
+  //  Verifica se já está logado
+  useEffect(() => {
+    const verificarLogin = async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        router.replace("/DashboardAdmin");
+      }
+    };
+    verificarLogin();
+  }, []);
 
   const handleLogin = async () => {
     setLoading(true);
