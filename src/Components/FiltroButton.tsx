@@ -8,7 +8,7 @@ interface OpcaoFiltro {
 }
 
 interface FiltroButtonProps {
-  value?: string; // Tornando opcional
+  value?: string;
   onValueChange: (value: string) => void;
   opcoes: OpcaoFiltro[];
   estiloContainer?: object;
@@ -16,7 +16,7 @@ interface FiltroButtonProps {
 }
 
 const FiltroButton: React.FC<FiltroButtonProps> = ({
-  value = "", // Valor padrão vazio
+  value = "",
   onValueChange,
   opcoes,
   estiloContainer,
@@ -32,7 +32,7 @@ const FiltroButton: React.FC<FiltroButtonProps> = ({
         buttons={opcoes.map((opcao) => ({
           value: opcao.value,
           label: opcao.label,
-          labelStyle: { fontSize: 12 },
+          labelStyle: styles.buttonLabel,
           style: {
             backgroundColor: value === opcao.value ? "black" : "white",
             borderColor: "#000",
@@ -47,23 +47,21 @@ const FiltroButton: React.FC<FiltroButtonProps> = ({
 
 const styles = StyleSheet.create({
   filtroContainer: {
-    padding: 10,
-    paddingTop: 10,
-    paddingBottom: 10,
-    marginTop: 20,
-    width: "100%",
-    backgroundColor: "#FFF",
+    padding: 16,
+    backgroundColor: "#F7F7F7",
     borderBottomWidth: 1,
     borderBottomColor: "#EEE",
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 10,
   },
   segmentedButtons: {
     borderRadius: 5,
     overflow: "hidden",
     width: "90%",
-    fontSize: 10,
+  },
+  buttonLabel: {
+    fontSize: 12,
   },
 });
 

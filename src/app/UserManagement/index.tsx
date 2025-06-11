@@ -14,6 +14,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { userService } from "src/services/userService";
 import UserCard from "src/Components/UserCard";
 import NovoUsuarioModal from "src/Components/NovoUsuarioModal";
+import FiltroButton from "src/Components/FiltroButton";
 
 interface Usuario {
   _id: string;
@@ -31,11 +32,18 @@ const UserManagement = () => {
   const [usuarioParaEditar, setUsuarioParaEditar] = useState<Usuario | null>(
     null
   );
+  const [filtroRole, setFiltroRole] = useState<string>("todos");
 
-  const buscarUsuarios = async () => {
+  const buscarUsuarios = async (role = "todos") => {
     try {
       const data = await userService.getAll();
-      setUsuarios(data);
+      const usuariosFiltrados =
+        role === "todos"
+          ? data
+          : data.filter(
+              (user) => user.role.toLowerCase() === role.toLowerCase()
+            );
+      setUsuarios(usuariosFiltrados);
     } catch (error: any) {
       Alert.alert(
         "Erro",
@@ -52,7 +60,7 @@ const UserManagement = () => {
   }) => {
     try {
       await userService.create(novoUsuario);
-      await buscarUsuarios();
+      await buscarUsuarios(filtroRole);
       Alert.alert("Sucesso", "Usuário criado com sucesso!");
     } catch (error: any) {
       throw error;
@@ -70,7 +78,7 @@ const UserManagement = () => {
   ) => {
     try {
       await userService.update(id, dadosAtualizados);
-      await buscarUsuarios();
+      await buscarUsuarios(filtroRole);
       Alert.alert("Sucesso", "Usuário atualizado com sucesso!");
     } catch (error: any) {
       throw error;
@@ -90,7 +98,7 @@ const UserManagement = () => {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await buscarUsuarios();
+      await buscarUsuarios(filtroRole);
     } finally {
       setRefreshing(false);
     }
@@ -98,8 +106,8 @@ const UserManagement = () => {
 
   useEffect(() => {
     setLoading(true);
-    buscarUsuarios().finally(() => setLoading(false));
-  }, []);
+    buscarUsuarios(filtroRole).finally(() => setLoading(false));
+  }, [filtroRole]);
 
   const handleEditarUsuario = (usuario: Usuario) => {
     setUsuarioParaEditar(usuario);
@@ -108,6 +116,17 @@ const UserManagement = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <FiltroButton
+        value={filtroRole}
+        onValueChange={setFiltroRole}
+        opcoes={[
+          { value: "admin", label: "Administrador" },
+          { value: "perito", label: "Perito" },
+          { value: "assistente", label: "Assistente" },
+        ]}
+        estiloContainer={styles.filtroContainer}
+      />
+
       <View style={styles.container}>
         {loading ? (
           <View style={styles.loadingContainer}>
@@ -159,10 +178,15 @@ const UserManagement = () => {
             setUsuarioParaEditar(null);
           }}
           onSalvar={async (usuario) => {
-            if (usuarioParaEditar) {
-              await handleAtualizarUsuario(usuarioParaEditar._id, usuario);
-            } else {
-              await handleCriarUsuario(usuario);
+            try {
+              if (usuarioParaEditar) {
+                await handleAtualizarUsuario(usuarioParaEditar._id, usuario);
+              } else {
+                await handleCriarUsuario(usuario);
+              }
+              setModalVisivel(false);
+            } catch (error) {
+              console.error("Erro ao salvar usuário:", error);
             }
           }}
           usuarioParaEditar={usuarioParaEditar || undefined}
@@ -172,8 +196,6 @@ const UserManagement = () => {
     </SafeAreaView>
   );
 };
-
-export default UserManagement;
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -205,7 +227,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: "#fff",
+    color: "#666",
   },
   botaoAdicionar: {
     backgroundColor: "#000",
@@ -224,4 +246,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 1000,
   },
+  filtroContainer: {
+    padding: 16,
+    backgroundColor: "#F7F7F7",
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEE",
+  },
 });
+
+export default UserManagement;
