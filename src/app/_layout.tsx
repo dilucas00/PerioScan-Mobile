@@ -64,23 +64,7 @@ export default function AppLayout() {
             ),
           }}
         />
-        <Tabs.Screen
-          name="Relatorios/index"
-          options={{
-            title: "",
-            tabBarIcon: ({ focused }) => (
-              <View style={styles.iconContainer}>
-                <Image
-                  source={require("../../assets/RelatoriosIcon.png")}
-                  tintColor={focused ? "#fff" : "rgba(255, 255, 255, 0.5)"}
-                  style={styles.icon}
-                  resizeMode="contain"
-                />
-                {focused && <View style={styles.indicator} />}
-              </View>
-            ),
-          }}
-        />
+
         <Tabs.Screen
           name="UserManagement/index"
           options={{

@@ -1,18 +1,88 @@
 import React from "react";
-import { Text, View, StyleSheet, SafeAreaView, ScrollView } from "react-native";
-import { Searchbar, Appbar, Button, PaperProvider } from "react-native-paper";
+import {
+  Text,
+  View,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import { Searchbar, Button, PaperProvider } from "react-native-paper";
 import CaseCard from "src/Components/caseCard";
 import NovoCasoModal from "src/Components/novoCasoModal";
-import FiltroButton from "src/Components/FiltroButton"; // Importe o novo componente
-import AppBarHeader from "src/Components/AppBarHeader";
+import FiltroButton from "src/Components/FiltroButton";
 
 export default function Cases() {
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [value, setValue] = React.useState("");
+  const [value, setValue] = React.useState("todos");
   const [showSearch, setShowSearch] = React.useState(false);
   const [visible, setVisible] = React.useState(false);
-  const showModal = () => setVisible(true);
+  const [cases, setCases] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
+  // Função para obter o token JWT (ajuste conforme onde você armazena o token)
+  async function getToken() {
+    // Exemplo usando AsyncStorage:
+    // return await AsyncStorage.getItem("token");
+    // Ajuste conforme seu projeto:
+    return localStorage.getItem("token");
+  }
+
+  async function fetchCases(status: string) {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = await getToken();
+
+      let url = "https://perioscan-back-end-fhhq.onrender.com/api/cases";
+      // Ajuste os valores do filtro para bater com o backend
+      let statusApi = status;
+      if (statusApi === "finalizados") statusApi = "finalizado";
+      if (statusApi === "em andamento") statusApi = "em andamento";
+      if (statusApi && statusApi !== "todos") {
+        url += `?status=${encodeURIComponent(statusApi)}`;
+      }
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const contentType = response.headers.get("content-type");
+      if (!response.ok) throw new Error("Erro ao buscar casos");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Resposta da API não é JSON. Verifique a URL da API.");
+      }
+      const data = await response.json();
+      // Log para depuração
+      console.log("Resposta da API:", data);
+      // Ajuste: use data.data se existir
+      if (Array.isArray(data.data)) {
+        setCases(data.data);
+      } else if (Array.isArray(data)) {
+        setCases(data);
+      } else if (Array.isArray(data.cases)) {
+        setCases(data.cases);
+      } else {
+        setCases([]);
+      }
+    } catch (err: any) {
+      setError(err.message || "Erro desconhecido");
+      setCases([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  React.useEffect(() => {
+    fetchCases(value);
+  }, [value]);
+
+  // Filtro de busca local
+  const filteredCases = cases.filter((c: any) =>
+    c.title?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const showModal = () => setVisible(true);
   function hideModal(): void {
     setVisible(false);
   }
@@ -21,7 +91,7 @@ export default function Cases() {
     <PaperProvider>
       <View style={styles.mainContainer}>
         {/* Header com Appbar */}
-    
+
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContent}
@@ -41,20 +111,24 @@ export default function Cases() {
             </View>
           )}
 
-          {/* Substituição pelo novo componente FiltroButton */}
           <FiltroButton
             value={value}
             onValueChange={setValue}
             opcoes={[
               { value: "todos", label: "Todos" },
               { value: "em andamento", label: "Em andamento" },
-              { value: "finalizados", label: "Finalizados" },
+              { value: "finalizado", label: "Finalizados" },
+              // Adicione outros status se necessário
             ]}
           />
 
           <View style={styles.cardContainer}>
             <View style={styles.titleCardContainer}>
-              <Text style={styles.titleContainerCard}>Todos os casos (8)</Text>
+              <Text style={styles.titleContainerCard}>
+                {value === "todos"
+                  ? `Todos os casos (${filteredCases.length})`
+                  : `Casos (${filteredCases.length})`}
+              </Text>
               <Button
                 icon="plus"
                 mode="contained"
@@ -68,31 +142,37 @@ export default function Cases() {
               </Button>
             </View>
 
-            <CaseCard
-              title="Marcas de mordida em criança vítima de maus tratos"
-              type="Exame Criminal"
-              creator="Admin"
-              status="Em andamento"
-              openingdate="24/04/2025"
-              id="1"
-            />
-
-            <CaseCard
-              title="Identificação post-mortem em acidente aéreo"
-              type="Identificação de Vítima"
-              creator="Admin"
-              status="Finalizado"
-              openingdate="14/05/2025"
-              id="2"
-            />
-            <CaseCard
-              title="Avaliação de traumatismo dentofacial em acidente de trânsito"
-              type="Acidente"
-              creator="Admin"
-              status="Finalizado"
-              openingdate="01/05/2025"
-              id="3"
-            />
+            {loading && (
+              <ActivityIndicator
+                size="large"
+                color="#000"
+                style={{ marginTop: 20 }}
+              />
+            )}
+            {error && (
+              <Text style={{ color: "red", padding: 16 }}>{error}</Text>
+            )}
+            {!loading && !error && filteredCases.length === 0 && (
+              <View style={{ padding: 16 }}>
+                <Text style={{ color: "#888" }}>Nenhum caso encontrado.</Text>
+                <Text style={{ color: "#888", fontSize: 10 }}>
+                  {JSON.stringify(cases)}
+                </Text>
+              </View>
+            )}
+            {!loading &&
+              !error &&
+              filteredCases.map((c: any) => (
+                <CaseCard
+                  key={c.id}
+                  title={c.title}
+                  type={c.type}
+                  creator={c.creator}
+                  status={c.status}
+                  openingdate={c.openingdate}
+                  id={c.id}
+                />
+              ))}
           </View>
         </ScrollView>
 
@@ -100,7 +180,8 @@ export default function Cases() {
           visible={visible}
           onDismiss={hideModal}
           onConfirm={(novoCaso) => {
-            console.log("Novo caso criado:", novoCaso);
+            // Opcional: atualizar lista após criar novo caso
+            fetchCases(value);
             hideModal();
           }}
         />
