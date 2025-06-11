@@ -5,6 +5,8 @@ import { MaterialIcons } from "@expo/vector-icons"; // Importa o ícone Material
 import { useRouter, useLocalSearchParams } from "expo-router";
 import CaseDetailCard from "../../../Components/caseDetailCard";
 import FiltroButton from "../../../Components/FiltroButton";
+import CardEvidence from "../../../Components/CardEvidence";
+import CardRelatorios from "../../../Components/CardRelatorios";
 
 export default function CaseDetails() {
   const router = useRouter();
@@ -78,6 +80,14 @@ export default function CaseDetails() {
               description={caseData.descricao}
             />
           </>
+        )}
+
+        {value === "evidências" && (
+          <CardEvidence />
+        )}
+
+        {value === "relatórios" && (
+          <CardRelatorios />
         )}
       </ScrollView>
 
