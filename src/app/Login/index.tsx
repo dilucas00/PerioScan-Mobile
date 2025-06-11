@@ -192,12 +192,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "600",
     marginBottom: 4,
+    color: "#000",
   },
   subtitulo: {
     fontSize: 18,
     fontWeight: "bold",
     marginTop: 30,
     marginBottom: 16,
+    color: "#000",
   },
   input: {
     width: "100%",

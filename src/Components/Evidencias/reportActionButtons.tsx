@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
   },
   deleteButton: {
-    backgroundColor: "#000",
+    backgroundColor: "#db6363",
   },
   disabledButton: {
     backgroundColor: "#E0E0E0",

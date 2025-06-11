@@ -7,6 +7,8 @@ import { Text, Card, Button } from "react-native-paper";
 import ReportTable from "./Evidencias/reportTable";
 import ReportActionButtons from "./Evidencias/reportActionButtons";
 import ReportModal from "./Evidencias/ReportModal";
+import ReportViewModal from "./Evidencias/reportViewModal";
+import ConfirmationModal from "./Evidencias/confirmationModal";
 import { useReports } from "../services/useReports";
 
 interface CardRelatoriosProps {
@@ -14,17 +16,27 @@ interface CardRelatoriosProps {
 }
 
 const CardRelatorios: React.FC<CardRelatoriosProps> = ({ caseId }) => {
-  const { reports, loading, fetchReports, createReport, deleteReport } =
-    useReports(caseId);
+  const {
+    reports,
+    loading,
+    fetchReports,
+    getReportById,
+    createReport,
+    deleteReport,
+  } = useReports(caseId);
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [methodology, setMethodology] = useState("");
   const [conclusion, setConclusion] = useState("");
   const [status, setStatus] = useState("rascunho");
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
+  const [viewingReport, setViewingReport] = useState<any>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const validateForm = () => {
@@ -80,48 +92,70 @@ const CardRelatorios: React.FC<CardRelatoriosProps> = ({ caseId }) => {
     setErrors({});
   };
 
-  const handleViewReport = () => {
+  const handleViewReport = async () => {
+    console.log("handleViewReport chamado, selectedReport:", selectedReport);
+
     if (!selectedReport) {
       Alert.alert("Atenção", "Selecione um relatório para visualizar");
       return;
     }
-    Alert.alert(
-      "Visualizar Relatório",
-      `Visualizando relatório ${selectedReport}`
-    );
+
+    try {
+      console.log("Buscando relatório para visualização...");
+      const report = await getReportById(selectedReport);
+      console.log("Relatório obtido:", report);
+
+      if (report) {
+        setViewingReport(report);
+        setViewModalVisible(true);
+        console.log("Modal de visualização aberto");
+      } else {
+        Alert.alert("Erro", "Não foi possível carregar o relatório");
+      }
+    } catch (error: any) {
+      console.error("Erro ao visualizar relatório:", error);
+      Alert.alert("Erro", error.message || "Erro ao carregar relatório");
+    }
   };
 
   const handleDeleteReport = () => {
+    console.log("handleDeleteReport chamado, selectedReport:", selectedReport);
+
     if (!selectedReport) {
       Alert.alert("Atenção", "Selecione um relatório para excluir");
       return;
     }
 
-    Alert.alert(
-      "Excluir Relatório",
-      "Tem certeza que deseja excluir este relatório?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteReport(selectedReport);
-              Alert.alert("Sucesso", "Relatório excluído com sucesso");
-              setSelectedReport(null);
-              fetchReports();
-            } catch (error: any) {
-              Alert.alert("Erro", error.message || "Erro ao excluir relatório");
-            }
-          },
-        },
-      ]
-    );
+    console.log("Abrindo modal de confirmação");
+    setConfirmDeleteVisible(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedReport) return;
+
+    console.log("Confirmando exclusão do relatório:", selectedReport);
+    setDeleteLoading(true);
+
+    try {
+      await deleteReport(selectedReport);
+      Alert.alert("Sucesso", "Relatório excluído com sucesso");
+      setSelectedReport(null);
+      setConfirmDeleteVisible(false);
+      fetchReports();
+    } catch (error: any) {
+      console.error("Erro ao excluir relatório:", error);
+      Alert.alert("Erro", error.message || "Erro ao excluir relatório");
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const handleSelectReport = (reportId: string) => {
-    setSelectedReport(selectedReport === reportId ? null : reportId);
+    console.log("Selecionando relatório:", reportId);
+    // Se clicar no mesmo relatório, deseleciona. Se clicar em outro, seleciona o novo
+    const newSelection = selectedReport === reportId ? null : reportId;
+    setSelectedReport(newSelection);
+    console.log("Relatório selecionado:", newSelection);
   };
 
   const handleModalDismiss = () => {
@@ -129,12 +163,26 @@ const CardRelatorios: React.FC<CardRelatoriosProps> = ({ caseId }) => {
     resetForm();
   };
 
+  const getSelectedReportTitle = () => {
+    const report = reports.find((r) => r.id === selectedReport);
+    return report?.title || "este relatório";
+  };
+
+  // Debug: Log do estado atual
+  console.log("Estado atual do CardRelatorios:", {
+    caseId,
+    reportsCount: reports.length,
+    selectedReport,
+    loading,
+  });
+
   return (
     <Card style={styles.card}>
       <Card.Content>
         <Text style={styles.title}>Relatórios</Text>
         <Text style={styles.description}>
-          Gerencie os relatórios periciais relacionados a este caso.
+          Gerencie os relatórios periciais relacionados a este caso. Selecione
+          um relatório para visualizar ou excluir.
         </Text>
 
         <ReportTable
@@ -182,6 +230,37 @@ const CardRelatorios: React.FC<CardRelatoriosProps> = ({ caseId }) => {
         onSubmit={handleSubmit}
         onGenerateWithAI={handleGenerateWithAI}
       />
+
+      <ReportViewModal
+        visible={viewModalVisible}
+        onDismiss={() => {
+          console.log("Fechando modal de visualização");
+          setViewModalVisible(false);
+          setViewingReport(null);
+        }}
+        report={viewingReport}
+        onEdit={() => {
+          Alert.alert(
+            "Em desenvolvimento",
+            "Funcionalidade de edição será implementada em breve"
+          );
+        }}
+      />
+
+      <ConfirmationModal
+        visible={confirmDeleteVisible}
+        onDismiss={() => {
+          console.log("Fechando modal de confirmação");
+          setConfirmDeleteVisible(false);
+        }}
+        onConfirm={confirmDelete}
+        title="Excluir Relatório"
+        message={`Tem certeza que deseja excluir "${getSelectedReportTitle()}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+        loading={deleteLoading}
+      />
     </Card>
   );
 };
@@ -189,7 +268,6 @@ const CardRelatorios: React.FC<CardRelatoriosProps> = ({ caseId }) => {
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    paddingBottom: 16,
     marginTop: 16,
     backgroundColor: "#FFFFFF",
     borderRadius: 12,

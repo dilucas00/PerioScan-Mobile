@@ -5,8 +5,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { Text } from "react-native-paper";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Text, RadioButton } from "react-native-paper";
 
 interface Report {
   id: string;
@@ -33,7 +32,7 @@ const ReportTable: React.FC<ReportTableProps> = ({
     return date.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
-      year: "numeric",
+      year: "2-digit",
     });
   };
 
@@ -61,11 +60,18 @@ const ReportTable: React.FC<ReportTableProps> = ({
   return (
     <View style={styles.tableContainer}>
       <View style={styles.tableHeader}>
-        <Text style={[styles.columnHeader, styles.titleColumn]}>Título</Text>
-        <Text style={[styles.columnHeader, styles.statusColumn]}>Status</Text>
-        <Text style={[styles.columnHeader, styles.dateColumn]}>
-          Data de Criação
-        </Text>
+        <View style={styles.titleColumn}>
+          <Text style={styles.columnHeader}>Título</Text>
+        </View>
+        <View style={styles.statusColumn}>
+          <Text style={styles.columnHeader}>Status</Text>
+        </View>
+        <View style={styles.dateColumn}>
+          <Text style={styles.columnHeader}>Data</Text>
+        </View>
+        <View style={styles.selectColumn}>
+          <Text style={styles.columnHeader}>Selecionar</Text>
+        </View>
       </View>
 
       {reports.map((report, index) => (
@@ -79,11 +85,14 @@ const ReportTable: React.FC<ReportTableProps> = ({
           onPress={() => onSelectReport(report.id)}
           activeOpacity={0.7}
         >
+          {/* Coluna do Título */}
           <View style={styles.titleColumn}>
             <Text style={styles.reportTitle} numberOfLines={2}>
               {report.title}
             </Text>
           </View>
+
+          {/* Coluna do Status */}
           <View style={styles.statusColumn}>
             <View
               style={[
@@ -107,14 +116,22 @@ const ReportTable: React.FC<ReportTableProps> = ({
               </Text>
             </View>
           </View>
+
+          {/* Coluna da Data */}
           <View style={styles.dateColumn}>
             <Text style={styles.dateText}>{formatDate(report.createdAt)}</Text>
           </View>
-          {selectedReport === report.id && (
-            <View style={styles.checkIcon}>
-              <MaterialIcons name="check-circle" size={20} color="#000" />
-            </View>
-          )}
+
+          {/* Coluna de Seleção - Movida para a direita */}
+          <View style={styles.selectColumn}>
+            <RadioButton
+              value={report.id}
+              status={selectedReport === report.id ? "checked" : "unchecked"}
+              onPress={() => onSelectReport(report.id)}
+              color="#000"
+              uncheckedColor="#CCC"
+            />
+          </View>
         </TouchableOpacity>
       ))}
     </View>
@@ -127,38 +144,53 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: "hidden",
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
   },
   tableHeader: {
     flexDirection: "row",
     backgroundColor: "#F0F0F0",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#E0E0E0",
+    alignItems: "center",
   },
   columnHeader: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "bold",
     color: "#333",
+    textAlign: "center",
   },
   titleColumn: {
     flex: 2.5,
+    paddingRight: 8,
   },
   statusColumn: {
-    flex: 1.5,
+    flex: 1.3,
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
   },
   dateColumn: {
-    flex: 1.5,
+    flex: 1,
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  selectColumn: {
+    width: 50,
+    alignItems: "center",
+    justifyContent: "center",
   },
   tableRow: {
     flexDirection: "row",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     alignItems: "center",
     minHeight: 60,
-    position: "relative",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
   },
   evenRow: {
     backgroundColor: "#FFFFFF",
@@ -168,36 +200,36 @@ const styles = StyleSheet.create({
   },
   selectedRow: {
     backgroundColor: "#E3F2FD",
-    borderLeftWidth: 4,
-    borderLeftColor: "#000",
+    borderRightWidth: 4,
+    borderRightColor: "#000",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   reportTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "500",
     color: "#333",
-    lineHeight: 18,
+    lineHeight: 16,
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 16,
-    alignSelf: "center",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 10,
+    minWidth: 70,
+    alignItems: "center",
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: "600",
     textAlign: "center",
   },
   dateText: {
-    fontSize: 13,
+    fontSize: 10,
     color: "#666",
     textAlign: "center",
-  },
-  checkIcon: {
-    position: "absolute",
-    right: 16,
-    top: "50%",
-    marginTop: -10,
   },
   loadingContainer: {
     padding: 24,
