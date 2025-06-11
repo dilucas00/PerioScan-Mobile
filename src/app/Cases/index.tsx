@@ -10,6 +10,7 @@ import { Searchbar, Button, PaperProvider } from "react-native-paper";
 import CaseCard from "src/Components/caseCard";
 import NovoCasoModal from "src/Components/novoCasoModal";
 import FiltroButton from "src/Components/FiltroButton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Cases() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -21,7 +22,13 @@ export default function Cases() {
   const [error, setError] = React.useState<string | null>(null);
 
   async function getToken() {
-    return localStorage.getItem("token");
+    try {
+      const token = await AsyncStorage.getItem("token");
+      return token;
+    } catch (e) {
+      console.error("Erro ao acessar o token no AsyncStorage", e);
+      return null;
+    }
   }
 
   async function fetchCases(status: string) {
@@ -31,27 +38,28 @@ export default function Cases() {
       const token = await getToken();
 
       let url = "https://perioscan-back-end-fhhq.onrender.com/api/cases";
-      // Ajuste os valores do filtro para bater com o backend
       let statusApi = status;
       if (statusApi === "finalizados") statusApi = "finalizado";
       if (statusApi === "em andamento") statusApi = "em andamento";
       if (statusApi && statusApi !== "todos") {
         url += `?status=${encodeURIComponent(statusApi)}`;
       }
+
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
       const contentType = response.headers.get("content-type");
       if (!response.ok) throw new Error("Erro ao buscar casos");
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Resposta da API não é JSON. Verifique a URL da API.");
       }
+
       const data = await response.json();
-      // Log para depuração
       console.log("Resposta da API:", data);
-      // Ajuste: use data.data se existir
+
       if (Array.isArray(data.data)) {
         setCases(data.data);
       } else if (Array.isArray(data)) {
@@ -73,7 +81,6 @@ export default function Cases() {
     fetchCases(value);
   }, [value]);
 
-  // Filtro de busca local
   const filteredCases = cases.filter((c: any) =>
     c.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -86,8 +93,6 @@ export default function Cases() {
   return (
     <PaperProvider>
       <View style={styles.mainContainer}>
-        {/* Header com Appbar */}
-
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContent}
@@ -114,7 +119,6 @@ export default function Cases() {
               { value: "todos", label: "Todos" },
               { value: "em andamento", label: "Em andamento" },
               { value: "finalizado", label: "Finalizados" },
-              // Adicione outros status se necessário
             ]}
           />
 
@@ -176,7 +180,6 @@ export default function Cases() {
           visible={visible}
           onDismiss={hideModal}
           onConfirm={(novoCaso) => {
-            // Opcional: atualizar lista após criar novo caso
             fetchCases(value);
             hideModal();
           }}
@@ -186,7 +189,6 @@ export default function Cases() {
   );
 }
 
-// Mantenha o restante dos estilos igual
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
