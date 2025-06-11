@@ -52,7 +52,33 @@ interface DashboardData {
   usuariosAssistentes: number;
   usuariosAdmin: number;
   casosRecentes: Case[];
-  atividadesRecentes: any[];
+  atividadesRecentes: Atividade[];
+}
+
+interface ChartDataPoint {
+  name: string;
+  population: number;
+  color: string;
+  legendFontColor: string;
+}
+
+interface LineBarChartData {
+  labels: string[];
+  datasets: {
+    data: number[];
+    color?: (opacity: number) => string;
+    strokeWidth?: number;
+  }[];
+}
+
+interface Atividade {
+  tipo: string;
+  titulo: string;
+  data: string | Date;
+  status?: string;
+  usuario?: string;
+  id?: string;
+  descricao: string;
 }
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -83,17 +109,16 @@ const DashboardScreen: React.FC = () => {
   const [activeLog, setActiveLog] = useState<"casos" | "atividades">("casos");
 
   // Dados para gráficos
-  const [chartData, setChartData] = useState({
+  const [chartData, setChartData] = useState<{
+    distribuicaoStatus: ChartDataPoint[];
+    distribuicaoUsuarios: ChartDataPoint[];
+    tendenciaCasos: LineBarChartData;
+    desempenhoMensal: LineBarChartData;
+  }>({
     distribuicaoStatus: [],
     distribuicaoUsuarios: [],
-    tendenciaCasos: {
-      labels: [],
-      datasets: [{ data: [] }],
-    },
-    desempenhoMensal: {
-      labels: [],
-      datasets: [{ data: [] }],
-    },
+    tendenciaCasos: { labels: [], datasets: [{ data: [] }] },
+    desempenhoMensal: { labels: [], datasets: [{ data: [] }] },
   });
 
   // Configuração dos gráficos
@@ -182,9 +207,9 @@ const DashboardScreen: React.FC = () => {
   };
 
   // Função para gerar dados de tendência
-  const gerarDadosTendencia = (casos, periodo) => {
+  const gerarDadosTendencia = (casos: Case[], periodo: "semana" | "mes" | "ano"): LineBarChartData => {
     const hoje = new Date();
-    let dataInicial, labels, intervalo;
+    let dataInicial: Date, labels: string[], intervalo: string;
 
     switch (periodo) {
       case "semana":
@@ -221,8 +246,8 @@ const DashboardScreen: React.FC = () => {
       return dataCaso >= dataInicial && dataCaso <= hoje;
     });
 
-    const casosAbertos = Array(labels.length).fill(0);
-    const casosFinalizados = Array(labels.length).fill(0);
+    const casosAbertos: number[] = Array(labels.length).fill(0);
+    const casosFinalizados: number[] = Array(labels.length).fill(0);
 
     casosDoPeriodo.forEach((caso) => {
       const dataCaso = new Date(caso.openDate || caso.createdAt);
@@ -257,10 +282,10 @@ const DashboardScreen: React.FC = () => {
   };
 
   // Função para gerar dados de desempenho mensal
-  const gerarDadosDesempenho = (casos) => {
+  const gerarDadosDesempenho = (casos: Case[]): LineBarChartData => {
     const hoje = new Date();
-    const meses = [];
-    const dadosMensais = [];
+    const meses: string[] = [];
+    const dadosMensais: number[] = [];
 
     for (let i = 5; i >= 0; i--) {
       const data = new Date(hoje);
@@ -286,8 +311,8 @@ const DashboardScreen: React.FC = () => {
   };
 
   // Função para gerar atividades recentes
-  const gerarAtividadesRecentes = (casos, usuarios) => {
-    const atividades = [];
+  const gerarAtividadesRecentes = (casos: Case[], usuarios: User[]): Atividade[] => {
+    const atividades: Atividade[] = [];
 
     casos.slice(0, 10).forEach((caso) => {
       atividades.push({
@@ -316,7 +341,7 @@ const DashboardScreen: React.FC = () => {
   };
 
   // Função para formatar papel do usuário
-  const formatarPapel = (role) => {
+  const formatarPapel = (role: string | undefined): string => {
     if (!role) return "Desconhecido";
     const mapeamento = {
       admin: "Administrador",
@@ -327,7 +352,7 @@ const DashboardScreen: React.FC = () => {
   };
 
   // Função para formatar data
-  const formatarData = (dataISO) => {
+  const formatarData = (dataISO: string | Date | undefined): string => {
     if (!dataISO) return "--";
     const data = new Date(dataISO);
     const dataAjustada = new Date(data.getTime() + data.getTimezoneOffset() * 60000);
@@ -339,7 +364,7 @@ const DashboardScreen: React.FC = () => {
   };
 
   // Função para calcular dias em aberto
-  const calcularDiasAberto = (dataAbertura) => {
+  const calcularDiasAberto = (dataAbertura: string | Date | undefined): string | number => {
     if (!dataAbertura) return "--";
     const inicio = new Date(dataAbertura);
     const hoje = new Date();
@@ -834,5 +859,4 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
-
 export default DashboardScreen;
