@@ -11,21 +11,40 @@ import CardRelatorios from "../../../Components/CardRelatorios";
 export default function CaseDetails() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const id = params?.id as string;
+  const {
+    id,
+    title,
+    openDate,
+    occurrenceDate,
+    location,
+    status,
+    createdBy,
+    type,
+    descricao,
+  } = params as {
+    id: string;
+    title: string;
+    openDate: string;
+    occurrenceDate: string;
+    location: string;
+    status: string;
+    createdBy: string;
+    type: string;
+    descricao: string;
+  };
 
   const [value, setValue] = useState("geral");
 
   const caseData = {
     id: id || "ID não recebido",
-    title: "Título do caso " + (id || ""),
-    openDate: "11/05/2025",
-    occurrenceDate: "02/05/2025",
-    location: "Local do caso",
-    status: "finalizado",
-    createdBy: "Admin",
-    type: "Identificação de Vítima",
-    descricao:
-      "Descrição detalhada do caso. Aqui você pode colocar informações adicionais sobre o caso, contexto, observações ou qualquer outro detalhe relevante.",
+    title: title || "Título não recebido",
+    openDate: openDate || "Data de abertura não recebida",
+    occurrenceDate: occurrenceDate || "Data de ocorrência não recebida",
+    location: location || "Local não recebido",
+    status: status || "Status não recebido",
+    createdBy: createdBy || "Criador não recebido",
+    type: type || "Tipo não recebido",
+    descricao: descricao || "Descrição não recebida",
   };
 
   const generalInfoItems = [

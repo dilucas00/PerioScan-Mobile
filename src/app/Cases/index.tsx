@@ -154,12 +154,15 @@ export default function Cases() {
               filteredCases.map((c: any) => (
                 <CaseCard
                   key={c.id}
+                  id={c.id}
                   title={c.title}
                   type={c.type}
-                  creator={c.creator}
+                  creator={c.createdBy?.name || "N/A"}
                   status={c.status}
-                  openingdate={c.openingdate}
-                  id={c.id}
+                  openingdate={c.openDate}
+                  occurrenceDate={c.occurrenceDate || "N/A"}
+                  location={c.location || "N/A"}
+                  descricao={c.description || "N/A"}
                 />
               ))}
           </View>

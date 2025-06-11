@@ -3,13 +3,32 @@ import { View, Text, StyleSheet } from "react-native";
 import { Card, Button } from "react-native-paper";
 import { useRouter } from "expo-router";
 
+// Função para formatar a data
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return "N/A";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Data inválida";
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "Data inválida";
+  }
+};
+
 interface CaseCardProps {
+  id?: string;
   title: string;
   type: string;
   creator: string;
   status: string;
   openingdate: string;
-  id?: string;
+  occurrenceDate?: string;
+  location?: string;
+  descricao?: string;
 }
 
 const CaseCard: React.FC<CaseCardProps> = ({
@@ -17,10 +36,16 @@ const CaseCard: React.FC<CaseCardProps> = ({
   type,
   creator,
   status,
-  openingdate,
+  openingdate: rawOpeningDate,
   id,
+  occurrenceDate: rawOccurrenceDate,
+  location,
+  descricao,
 }) => {
   const router = useRouter();
+
+  const openingdate = formatDate(rawOpeningDate);
+  const occurrenceDate = formatDate(rawOccurrenceDate);
 
   const getStatusColor = () => {
     switch (status.toLowerCase()) {
@@ -35,7 +60,17 @@ const CaseCard: React.FC<CaseCardProps> = ({
     if (id) {
       router.push({
         pathname: "/Cases/(cases)/[id]",
-        params: { id },
+        params: {
+          id,
+          title,
+          openDate: openingdate,
+          occurrenceDate: occurrenceDate,
+          location: location || "N/A",
+          status,
+          createdBy: creator,
+          type,
+          descricao: descricao || "N/A",
+        },
       });
     }
   };
@@ -47,30 +82,26 @@ const CaseCard: React.FC<CaseCardProps> = ({
           <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
             {title}
           </Text>
-
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Tipo:</Text>
             <Text style={styles.detailValue}>{type}</Text>
           </View>
-
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Criador:</Text>
             <Text style={styles.detailValue}>{creator}</Text>
           </View>
-
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Data de abertura:</Text>
+            <Text style={styles.detailValue}>{openingdate}</Text>
+          </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Status:</Text>
             <Text style={[styles.statusValue, { color: getStatusColor() }]}>
               {status}
             </Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Data de abertura:</Text>
-            <Text style={styles.detailValue}>{openingdate}</Text>
-          </View>
         </View>
-
-        <Card.Actions style={styles.actions}>
+        <View style={styles.actionsContainer}>
           <Button
             icon="eye"
             mode="contained"
@@ -83,7 +114,7 @@ const CaseCard: React.FC<CaseCardProps> = ({
           >
             Ver caso
           </Button>
-        </Card.Actions>
+        </View>
       </Card.Content>
     </Card>
   );
@@ -102,12 +133,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   content: {
-    flexDirection: "column",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
   },
   textContainer: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 16,
   },
   title: {
     fontSize: 14,
@@ -138,20 +171,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     flex: 1,
   },
-  actions: {
+  actionsContainer: {
     justifyContent: "center",
-    padding: 0,
-    margin: 0,
-    minWidth: 100,
+    alignItems: "center",
   },
   button: {
     borderRadius: 8,
-    paddingVertical: 2,
     height: 40,
+    justifyContent: "center",
   },
   buttonLabel: {
     fontSize: 12,
     fontWeight: "500",
+    marginHorizontal: 8,
   },
 });
 
