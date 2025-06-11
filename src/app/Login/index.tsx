@@ -14,8 +14,10 @@ import {
   ActivityIndicator,
 } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 
 export default function Login() {
+  const router = useRouter();
   const [email, setEmail] = React.useState("");
   const [senha, setSenha] = React.useState("");
   const [showPassword, setshowPassword] = React.useState(false);
@@ -61,6 +63,7 @@ export default function Login() {
       await AsyncStorage.setItem("role", data.user.role);
 
       setSucesso("Login realizado com sucesso!");
+      router.replace("/DashboardAdmin");
     } catch (err) {
       console.error("Erro no login:", err);
       if (err instanceof Error) {
@@ -155,6 +158,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     justifyContent: "center",
     alignItems: "center",
+    padding: 10,
   },
   card: {
     backgroundColor: "#FFF",
