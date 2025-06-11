@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState } from "react";
 import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { Text, Appbar } from "react-native-paper";
+import { Appbar } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import CaseDetailCard from "../../../Components/caseDetailCard";
@@ -108,7 +110,7 @@ export default function CaseDetails() {
 
         {value === "evidências" && <CardEvidence />}
 
-        {value === "relatórios" && <CardRelatorios />}
+        {value === "relatórios" && <CardRelatorios caseId={caseData.id} />}
       </ScrollView>
 
       {/* Botão flutuante de editar */}

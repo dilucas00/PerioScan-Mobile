@@ -1,7 +1,8 @@
-import React from "react";
+"use client";
 import { Tabs, usePathname } from "expo-router"; // Alterado de useSegments para usePathname
 import { Image, StyleSheet, View } from "react-native";
 import AppBarHeader from "../Components/AppBarHeader";
+import { PaperProvider } from "react-native-paper";
 
 export default function AppLayout() {
   const pathname = usePathname();
@@ -12,12 +13,12 @@ export default function AppLayout() {
   const showHeader = !isLoginScreen;
 
   return (
-    <>
+    <PaperProvider>
       {showHeader && <AppBarHeader />}
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarStyle: isLoginScreen ? { display: 'none' } : styles.tabBar,
+          tabBarStyle: isLoginScreen ? { display: "none" } : styles.tabBar,
           tabBarActiveTintColor: "#fff",
           tabBarInactiveTintColor: "rgba(255, 255, 255, 0.5)",
           tabBarShowLabel: false,
@@ -97,7 +98,7 @@ export default function AppLayout() {
           }}
         />
       </Tabs>
-    </>
+    </PaperProvider>
   );
 }
 
