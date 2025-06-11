@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   View,
@@ -14,13 +14,13 @@ import {
   Text as PaperText,
 } from "react-native-paper";
 
-interface NovoUsuarioModalProps {
+export interface NovoUsuarioModalProps {
   visivel: boolean;
   onClose: () => void;
   onSalvar: (usuario: {
     name: string;
     email: string;
-    password: string;
+    password?: string;
     role: string;
   }) => Promise<void>;
   usuarioParaEditar?: {
@@ -39,10 +39,10 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
   usuarioParaEditar,
   modoEdicao = false,
 }) => {
-  const [nome, setNome] = useState(usuarioParaEditar?.name || "");
-  const [email, setEmail] = useState(usuarioParaEditar?.email || "");
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [cargo, setCargo] = useState(usuarioParaEditar?.role || "");
+  const [cargo, setCargo] = useState("");
   const [loading, setLoading] = useState(false);
   const [erros, setErros] = useState({
     nome: "",
@@ -50,6 +50,17 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
     senha: "",
     cargo: "",
   });
+
+  useEffect(() => {
+    if (modoEdicao && usuarioParaEditar) {
+      setNome(usuarioParaEditar.name);
+      setEmail(usuarioParaEditar.email);
+      setCargo(usuarioParaEditar.role);
+      setSenha("");
+    } else {
+      limparCampos();
+    }
+  }, [usuarioParaEditar, modoEdicao]);
 
   const validarEmail = (email: string) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -64,7 +75,7 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
       cargo: "",
     };
 
-    if (!modoEdicao && !nome.trim()) novosErros.nome = "Nome é obrigatório";
+    if (!nome.trim()) novosErros.nome = "Nome é obrigatório";
     if (!email.trim()) novosErros.email = "Email é obrigatório";
     else if (!validarEmail(email)) novosErros.email = "Email inválido";
     if (!modoEdicao && !senha.trim()) novosErros.senha = "Senha é obrigatória";
@@ -85,7 +96,12 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
 
     setLoading(true);
     try {
-      const dadosUsuario: any = {
+      const dadosUsuario: {
+        name: string;
+        email: string;
+        role: string;
+        password?: string;
+      } = {
         name: nome,
         email,
         role: cargoMapping[cargo as keyof typeof cargoMapping],
@@ -256,8 +272,6 @@ const NovoUsuarioModal: React.FC<NovoUsuarioModalProps> = ({
   );
 };
 
-export default NovoUsuarioModal;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -350,3 +364,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
+export default NovoUsuarioModal;

@@ -13,7 +13,9 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { userService } from "src/services/userService";
 import UserCard from "src/Components/UserCard";
-import NovoUsuarioModal from "src/Components/NovoUsuarioModal";
+import NovoUsuarioModal, {
+  NovoUsuarioModalProps,
+} from "src/Components/NovoUsuarioModal";
 import FiltroButton from "src/Components/FiltroButton";
 
 interface Usuario {
@@ -182,7 +184,14 @@ const UserManagement = () => {
               if (usuarioParaEditar) {
                 await handleAtualizarUsuario(usuarioParaEditar._id, usuario);
               } else {
-                await handleCriarUsuario(usuario);
+                await handleCriarUsuario(
+                  usuario as {
+                    name: string;
+                    email: string;
+                    password: string;
+                    role: string;
+                  }
+                );
               }
               setModalVisivel(false);
             } catch (error) {
@@ -196,7 +205,6 @@ const UserManagement = () => {
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
