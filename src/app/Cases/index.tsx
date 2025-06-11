@@ -6,7 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { Searchbar, Button, PaperProvider } from "react-native-paper";
+import { Searchbar, Button, PaperProvider, FAB } from "react-native-paper";
 import CaseCard from "src/Components/caseCard";
 import NovoCasoModal from "src/Components/novoCasoModal";
 import FiltroButton from "src/Components/FiltroButton";
@@ -129,17 +129,6 @@ export default function Cases() {
                   ? `Todos os casos (${filteredCases.length})`
                   : `Casos (${filteredCases.length})`}
               </Text>
-              <Button
-                icon="plus"
-                mode="contained"
-                buttonColor="#000"
-                textColor="#FFF"
-                style={styles.buttonNovoCaso}
-                onPress={showModal}
-                compact
-              >
-                Novo caso
-              </Button>
             </View>
 
             {loading && (
@@ -183,6 +172,17 @@ export default function Cases() {
             fetchCases(value);
             hideModal();
           }}
+        />
+
+        {/* FAB flutuante para criar novo caso */}
+        <FAB
+          icon="plus"
+          style={styles.fab}
+          onPress={showModal}
+          color="#FFF"
+          customSize={56}
+          mode="flat"
+          variant="surface"
         />
       </View>
     </PaperProvider>
@@ -263,32 +263,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
   },
-  buttonNovoCaso: {
-    marginLeft: "auto",
-    borderRadius: 5,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    height: 35,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
-    color: "#000",
-  },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 20,
-    color: "#555",
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 10,
-  },
-  modalButton: {
-    marginLeft: 10,
+  fab: {
+    position: "absolute",
+    right: 16,
+    bottom: 140,
+    backgroundColor: "#000",
+    zIndex: 10,
   },
 });
