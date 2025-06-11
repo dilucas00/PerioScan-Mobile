@@ -139,9 +139,10 @@ const DashboardScreen: React.FC = () => {
 
   // Configuração dos gráficos
   const chartConfig = {
-    backgroundGradientFrom: "#ffffff",
-    backgroundGradientTo: "#ffffff",
-    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    backgroundGradientFrom: "#000000", // Preto
+    backgroundGradientTo: "#333333",   // Cinza escuro
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // Branco para texto e linhas
+    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // Branco para rótulos
     strokeWidth: 2,
     barPercentage: 0.5,
     useShadowColorFromDataset: false,
@@ -149,6 +150,14 @@ const DashboardScreen: React.FC = () => {
     style: {
       borderRadius: 16,
     },
+    propsForDots: { // Para LineChart
+      r: "6",
+      strokeWidth: "2",
+      stroke: "#ffffff"
+    },
+    propsForLabels: { // Para rótulos dos eixos
+      fill: "#ffffff"
+    }
   };
 
   // Buscar dados do dashboard
@@ -262,7 +271,7 @@ const DashboardScreen: React.FC = () => {
 
     const casosDoPeriodo = casos.filter((caso) => {
       const dataCaso = new Date(caso.openDate || caso.createdAt);
-      return dataCaso >= dataInicial && dataCaso <= hoje;
+      return dataCaso.getTime() >= dataInicial.getTime() && dataCaso.getTime() <= hoje.getTime();
     });
 
     const casosAbertos: number[] = Array(labels.length).fill(0);
@@ -273,10 +282,10 @@ const DashboardScreen: React.FC = () => {
       let indice = 0;
 
       if (intervalo === "dia") {
-        const diasDesdeInicio = Math.floor((dataCaso - dataInicial) / (1000 * 60 * 60 * 24));
+        const diasDesdeInicio = Math.floor((dataCaso.getTime() - dataInicial.getTime()) / (1000 * 60 * 60 * 24));
         indice = Math.min(Math.max(diasDesdeInicio, 0), 6);
       } else if (intervalo === "semana") {
-        const diasDesdeInicio = Math.floor((dataCaso - dataInicial) / (1000 * 60 * 60 * 24));
+        const diasDesdeInicio = Math.floor((dataCaso.getTime() - dataInicial.getTime()) / (1000 * 60 * 60 * 24));
         indice = Math.min(Math.floor(diasDesdeInicio / 7), 3);
       } else if (intervalo === "mes") {
         indice = dataCaso.getMonth();
@@ -293,7 +302,7 @@ const DashboardScreen: React.FC = () => {
       datasets: [
         {
           data: casosAbertos,
-          color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+          color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`, // Linha branca
           strokeWidth: 2,
         },
       ],
@@ -325,7 +334,7 @@ const DashboardScreen: React.FC = () => {
 
     return {
       labels: meses,
-      datasets: [{ data: dadosMensais }],
+      datasets: [{ data: dadosMensais, color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})` }], // Barras brancas
     };
   };
 
@@ -337,7 +346,7 @@ const DashboardScreen: React.FC = () => {
       atividades.push({
         tipo: "caso_criado",
         titulo: caso.title || "Caso sem título",
-        data: caso.createdAt || caso.openDate,
+        data: caso.createdAt || caso.openDate || new Date().toISOString(),
         status: caso.status,
         usuario: caso.createdBy?.name || "Usuário desconhecido",
         id: caso._id || caso.id,
@@ -349,20 +358,20 @@ const DashboardScreen: React.FC = () => {
       atividades.push({
         tipo: "usuario_criado",
         titulo: `${usuario.name || "Usuário"} (${formatarPapel(usuario.role)})`,
-        data: usuario.createdAt || new Date(),
+        data: usuario.createdAt || new Date().toISOString(),
         status: usuario.active !== false ? "Ativo" : "Inativo",
         id: usuario._id || usuario.id,
         descricao: `Novo usuário ${formatarPapel(usuario.role)} adicionado ao sistema`,
       });
     });
 
-    return atividades.sort((a, b) => new Date(b.data) - new Date(a.data)).slice(0, 10);
+    return atividades.sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()).slice(0, 10);
   };
 
   // Função para formatar papel do usuário
   const formatarPapel = (role: string | undefined): string => {
     if (!role) return "Desconhecido";
-    const mapeamento = {
+    const mapeamento: { [key: string]: string } = {
       admin: "Administrador",
       perito: "Perito",
       assistente: "Assistente",
@@ -387,7 +396,7 @@ const DashboardScreen: React.FC = () => {
     if (!dataAbertura) return "--";
     const inicio = new Date(dataAbertura);
     const hoje = new Date();
-    return Math.floor((hoje - inicio) / (1000 * 60 * 60 * 24));
+    return Math.floor((hoje.getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24));
   };
 
   const updateDashboardData = (casos: Case[], usuarios: User[], vitimas: Victim[]) => {
@@ -436,14 +445,14 @@ const DashboardScreen: React.FC = () => {
 
     setChartData({
       distribuicaoStatus: [
-        { name: "Em Andamento", population: casosEmAndamento, color: "#b99f81", legendFontColor: "#7F7F7F" },
-        { name: "Finalizados", population: casosFinalizados, color: "#62725c", legendFontColor: "#7F7F7F" },
-        { name: "Arquivados", population: casosArquivados, color: "#969696", legendFontColor: "#7F7F7F" },
+        { name: "Em Andamento", population: casosEmAndamento, color: "#444444", legendFontColor: "#FFFFFF" },
+        { name: "Finalizados", population: casosFinalizados, color: "#888888", legendFontColor: "#FFFFFF" },
+        { name: "Arquivados", population: casosArquivados, color: "#BBBBBB", legendFontColor: "#FFFFFF" },
       ],
       distribuicaoUsuarios: [
-        { name: "Peritos", population: usuariosPeritos, color: "#706C61", legendFontColor: "#7F7F7F" },
-        { name: "Assistentes", population: usuariosAssistentes, color: "#0C1618", legendFontColor: "#7F7F7F" },
-        { name: "Administradores", population: usuariosAdmin, color: "#EAD2AC", legendFontColor: "#7F7F7F" },
+        { name: "Peritos", population: usuariosPeritos, color: "#222222", legendFontColor: "#FFFFFF" },
+        { name: "Assistentes", population: usuariosAssistentes, color: "#666666", legendFontColor: "#FFFFFF" },
+        { name: "Administradores", population: usuariosAdmin, color: "#AAAAAA", legendFontColor: "#FFFFFF" },
       ],
       tendenciaCasos: gerarDadosTendencia(casos, periodoAtivo),
       desempenhoMensal: gerarDadosDesempenho(casos),
@@ -453,7 +462,7 @@ const DashboardScreen: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#000" />
+        <ActivityIndicator size="large" color="#FFF" />
         <Text style={styles.loadingText}>Carregando dados do dashboard...</Text>
       </View>
     );
@@ -477,7 +486,7 @@ const DashboardScreen: React.FC = () => {
         style={styles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {/* Stats Summary */}
+        {/* Stats Summary - Cards ajustados para ficarem do mesmo tamanho */}
         <View style={styles.statsSummary}>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryTitle}>Total de Casos</Text>
@@ -492,158 +501,149 @@ const DashboardScreen: React.FC = () => {
           <View style={styles.summaryCard}>
             <Text style={styles.summaryTitle}>Vítimas</Text>
             <Text style={styles.summaryValue}>{dashboardData.totalVitimas}</Text>
-            <Text style={styles.summarySubtext}>
-              Identificadas: {dashboardData.vitimasIdentificadas}
-            </Text>
+            <Text style={styles.summarySubtext}>Identificadas: {dashboardData.vitimasIdentificadas}</Text>
           </View>
         </View>
 
-        {/* Distribuições */}
-        <View style={styles.distributionSection}>
-          <Text style={styles.sectionTitle}>Distribuição de Casos</Text>
-          <View style={styles.chartContainer}>
+        {/* Gráficos */}
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Distribuição de Casos por Status</Text>
+          {chartData.distribuicaoStatus.length > 0 ? (
             <PieChart
               data={chartData.distribuicaoStatus}
-              width={screenWidth - 40}
-              height={220}
+              width={screenWidth - 40} // Ajuste para padding
+              height={250}
               chartConfig={chartConfig}
               accessor="population"
               backgroundColor="transparent"
-              paddingLeft="15"
-              absolute
+              paddingLeft="20"
+              // center={[10, 50]} // Removido para melhor centralização automática
+              absolute // Para mostrar valores absolutos
+              hasLegend={true}
             />
-          </View>
-        </View>
-
-        <View style={styles.distributionSection}>
-          <Text style={styles.sectionTitle}>Distribuição de Usuários</Text>
-          <View style={styles.chartContainer}>
-            <PieChart
-              data={chartData.distribuicaoUsuarios}
-              width={screenWidth - 40}
-              height={220}
-              chartConfig={chartConfig}
-              accessor="population"
-              backgroundColor="transparent"
-              paddingLeft="15"
-              absolute
-            />
-          </View>
-        </View>
-
-        {/* Tendência de Casos */}
-        <View style={styles.distributionSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Tendência de Casos</Text>
-          </View>
-          <View style={styles.periodSelector}>
-            <TouchableOpacity
-              style={[styles.periodButton, periodoAtivo === "semana" && styles.periodButtonActive]}
-              onPress={() => setPeriodoAtivo("semana")}
-            >
-              <Text style={[styles.periodButtonText, periodoAtivo === "semana" && styles.periodButtonTextActive]}>
-                Semana
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.periodButton, periodoAtivo === "mes" && styles.periodButtonActive]}
-              onPress={() => setPeriodoAtivo("mes")}
-            >
-              <Text style={[styles.periodButtonText, periodoAtivo === "mes" && styles.periodButtonTextActive]}>
-                Mês
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.periodButton, periodoAtivo === "ano" && styles.periodButtonActive]}
-              onPress={() => setPeriodoAtivo("ano")}
-            >
-              <Text style={[styles.periodButtonText, periodoAtivo === "ano" && styles.periodButtonTextActive]}>
-                Ano
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.chartContainer}>
-            <LineChart
-              data={chartData.tendenciaCasos}
-              width={screenWidth - 40}
-              height={220}
-              chartConfig={chartConfig}
-              bezier
-            />
-          </View>
-        </View>
-
-        {/* Desempenho Mensal */}
-        <View style={styles.distributionSection}>
-          <Text style={styles.sectionTitle}>Desempenho Mensal</Text>
-          <View style={styles.chartContainer}>
-            <BarChart
-              data={chartData.desempenhoMensal}
-              width={screenWidth - 40}
-              height={220}
-              chartConfig={chartConfig}
-              yAxisLabel=""
-              yAxisSuffix=""
-            />
-          </View>
-        </View>
-
-        {/* Registros Recentes */}
-        <View style={styles.recentSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Registros Recentes</Text>
-            <View style={styles.logSelector}>
-              <TouchableOpacity
-                style={[styles.logButton, activeLog === "casos" && styles.logButtonActive]}
-                onPress={() => setActiveLog("casos")}
-              >
-                <Text style={[styles.logButtonText, activeLog === "casos" && styles.logButtonTextActive]}>
-                  Casos
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.logButton, activeLog === "atividades" && styles.logButtonActive]}
-                onPress={() => setActiveLog("atividades")}
-              >
-                <Text style={[styles.logButtonText, activeLog === "atividades" && styles.logButtonTextActive]}>
-                  Atividades
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {activeLog === "casos" ? (
-            <>
-              {dashboardData.casosRecentes.map((item, index) => (
-                <View key={index} style={styles.recentCard}>
-                  <Text style={styles.recentTitle}>{item.title}</Text>
-                  <View style={styles.recentInfo}>
-                    <Text style={styles.recentDate}>Data Abertura: {formatarData(item.openDate || item.createdAt)}</Text>
-                    <Text style={styles.recentCreator}>Criador: {item.createdBy?.name || "Usuário desconhecido"}</Text>
-                    <Text style={styles.recentStatus}>Status: {item.status}</Text>
-                    <Text style={styles.recentDays}>{calcularDiasAberto(item.openDate || item.createdAt)} dias em aberto</Text>
-                  </View>
-                </View>
-              ))}
-            </>
           ) : (
-            <>
-              {dashboardData.atividadesRecentes.map((item, index) => (
-                <View key={index} style={styles.recentCard}>
-                  <Text style={styles.recentTitle}>{item.titulo}</Text>
-                  <Text style={styles.activityDescription}>{item.descricao}</Text>
-                  <View style={styles.recentInfo}>
-                    <Text style={styles.recentDate}>Data: {formatarData(item.data)}</Text>
-                    <Text style={styles.recentStatus}>Status: {item.status}</Text>
-                  </View>
-                </View>
-              ))}
-            </>
+            <Text style={styles.noDataText}>Sem dados de status para exibir.</Text>
           )}
         </View>
 
-        {/* Espaço extra para garantir que o conteúdo não fique sob a navbar */}
-        <View style={styles.bottomSpacing} />
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Distribuição de Usuários por Tipo</Text>
+          {chartData.distribuicaoUsuarios.length > 0 ? (
+            <PieChart
+              data={chartData.distribuicaoUsuarios}
+              width={screenWidth - 40}
+              height={250}
+              chartConfig={chartConfig}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="20"
+              absolute
+              hasLegend={true}
+            />
+          ) : (
+            <Text style={styles.noDataText}>Sem dados de usuários para exibir.</Text>
+          )}
+        </View>
+
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Tendência de Casos (Últimos {periodoAtivo === "semana" ? "7 Dias" : periodoAtivo === "mes" ? "30 Dias" : "1 Ano"})</Text>
+          <View style={styles.periodoSelector}>
+            <TouchableOpacity
+              style={[styles.periodoButton, periodoAtivo === "semana" && styles.periodoButtonActive]}
+              onPress={() => setPeriodoAtivo("semana")}
+            >
+              <Text style={[styles.periodoButtonText, periodoAtivo === "semana" && styles.periodoButtonTextActive]}>Semana</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.periodoButton, periodoAtivo === "mes" && styles.periodoButtonActive]}
+              onPress={() => setPeriodoAtivo("mes")}
+            >
+              <Text style={[styles.periodoButtonText, periodoAtivo === "mes" && styles.periodoButtonTextActive]}>Mês</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.periodoButton, periodoAtivo === "ano" && styles.periodoButtonActive]}
+              onPress={() => setPeriodoAtivo("ano")}
+            >
+              <Text style={[styles.periodoButtonText, periodoAtivo === "ano" && styles.periodoButtonTextActive]}>Ano</Text>
+            </TouchableOpacity>
+          </View>
+          {chartData.tendenciaCasos.labels.length > 0 ? (
+            <LineChart
+              data={chartData.tendenciaCasos}
+              width={screenWidth - 40}
+              height={250}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.chartStyle}
+            />
+          ) : (
+            <Text style={styles.noDataText}>Sem dados de tendência para exibir.</Text>
+          )}
+        </View>
+
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Desempenho Mensal (Casos Finalizados/Arquivados)</Text>
+          {chartData.desempenhoMensal.labels.length > 0 ? (
+            <BarChart
+              data={chartData.desempenhoMensal}
+              width={screenWidth - 40}
+              height={250}
+              chartConfig={chartConfig}
+              style={styles.chartStyle}
+              verticalLabelRotation={30}
+            />
+          ) : (
+            <Text style={styles.noDataText}>Sem dados de desempenho mensal para exibir.</Text>
+          )}
+        </View>
+
+        {/* Atividades Recentes */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Atividades Recentes</Text>
+          <View style={styles.logSelector}>
+            <TouchableOpacity
+              style={[styles.logButton, activeLog === "casos" && styles.logButtonActive]}
+              onPress={() => setActiveLog("casos")}
+            >
+              <Text style={[styles.logButtonText, activeLog === "casos" && styles.logButtonTextActive]}>Casos Recentes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.logButton, activeLog === "atividades" && styles.logButtonActive]}
+              onPress={() => setActiveLog("atividades")}
+            >
+              <Text style={[styles.logButtonText, activeLog === "atividades" && styles.logButtonTextActive]}>Todas Atividades</Text>
+            </TouchableOpacity>
+          </View>
+          {activeLog === "casos" ? (
+            dashboardData.casosRecentes.length > 0 ? (
+              dashboardData.casosRecentes.map((caso, index) => (
+                <View key={index} style={styles.logItem}>
+                  <Text style={styles.logItemTitle}>{caso.title || "Caso sem título"}</Text>
+                  <Text style={styles.logItemText}>Status: {caso.status}</Text>
+                  <Text style={styles.logItemText}>Aberto em: {formatarData(caso.openDate || caso.createdAt)}</Text>
+                  <Text style={styles.logItemText}>Criado por: {caso.createdBy?.name || "Desconhecido"}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noDataText}>Nenhum caso recente para exibir.</Text>
+            )
+          ) : (
+            dashboardData.atividadesRecentes.length > 0 ? (
+              dashboardData.atividadesRecentes.map((atividade, index) => (
+                <View key={index} style={styles.logItem}>
+                  <Text style={styles.logItemTitle}>{atividade.titulo}</Text>
+                  <Text style={styles.logItemText}>Tipo: {atividade.tipo}</Text>
+                  <Text style={styles.logItemText}>Data: {formatarData(atividade.data)}</Text>
+                  {atividade.usuario && <Text style={styles.logItemText}>Usuário: {atividade.usuario}</Text>}
+                  {atividade.status && <Text style={styles.logItemText}>Status: {atividade.status}</Text>}
+                  <Text style={styles.logItemText}>Descrição: {atividade.descricao}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noDataText}>Nenhuma atividade recente para exibir.</Text>
+            )
+          )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -652,219 +652,209 @@ const DashboardScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#000000", // Fundo preto
+  },
+  scrollView: {
+    flex: 1,
+    padding: 16,
+    paddingBottom: 80, // Adicionado espaço para a navbar
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#000000",
   },
   loadingText: {
     marginTop: 10,
+    color: "#FFFFFF",
     fontSize: 16,
-    color: "#666",
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "#000000",
     padding: 20,
   },
   errorTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#000",
+    color: "#FF6347", // Tom de vermelho para erro
     marginBottom: 10,
   },
   errorMessage: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 16,
+    color: "#FFFFFF",
     textAlign: "center",
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: "#000",
-    paddingHorizontal: 20,
+    backgroundColor: "#333333",
     paddingVertical: 10,
-    borderRadius: 5,
+    paddingHorizontal: 20,
+    borderRadius: 8,
   },
   retryButtonText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "bold",
   },
-  scrollView: {
-    flex: 1,
-  },
-  statsSection: {
-    padding: 20,
-  },
-  sectionHeader: {
+  statsSummary: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-between", // Mudado de space-around para space-between
+    marginBottom: 20,
+    paddingHorizontal: 5, // Adicionado padding horizontal
+  },
+  summaryCard: {
+    backgroundColor: "#1A1A1A", // Cartão cinza escuro
+    padding: 18, // Aumentado de 15 para 18
+    borderRadius: 10,
     alignItems: "center",
+    flex: 1,
+    marginHorizontal: 4, // Reduzido de 5 para 4
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+    minHeight: 100, // Adicionado altura mínima para uniformizar
+    justifyContent: "center", // Centraliza o conteúdo verticalmente
+  },
+  summaryTitle: {
+    fontSize: 13, // Reduzido de 14 para 13 para caber melhor
+    color: "#BBBBBB", // Título cinza claro
+    marginBottom: 8, // Aumentado de 5 para 8
+    textAlign: "center", // Centraliza o texto
+    lineHeight: 16, // Adicionado para melhor espaçamento
+  },
+  summaryValue: {
+    fontSize: 26, // Aumentado de 24 para 26
+    fontWeight: "bold",
+    color: "#FFFFFF", // Valor branco
+    marginBottom: 6, // Aumentado de 0 para 6
+  },
+  summarySubtext: {
+    fontSize: 11, // Reduzido de 12 para 11
+    color: "#888888", // Subtexto cinza
+    textAlign: "center", // Centraliza o texto
+    lineHeight: 14, // Adicionado para melhor espaçamento
+  },
+  chartContainer: {
+    backgroundColor: "#1A1A1A", // Fundo do gráfico cinza escuro
+    borderRadius: 10,
+    padding: 16,
+    paddingVertical: 20, // Aumentado para dar mais espaço vertical
+    marginBottom: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#FFFFFF", // Título do gráfico branco
     marginBottom: 15,
+  },
+  chartStyle: {
+    marginVertical: 0, // Removido, espaço agora no paddingVertical do chartContainer
+    borderRadius: 16,
+  },
+  noDataText: {
+    color: "#888888",
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 20,
+  },
+  periodoSelector: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 15,
+  },
+  periodoButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    marginHorizontal: 5,
+    backgroundColor: "#333333", // Botão inativo cinza escuro
+  },
+  periodoButtonActive: {
+    backgroundColor: "#FFFFFF", // Botão ativo branco
+  },
+  periodoButtonText: {
+    color: "#FFFFFF", // Texto do botão inativo branco
+    fontWeight: "bold",
+  },
+  periodoButtonTextActive: {
+    color: "#000000", // Texto do botão ativo preto
+  },
+  sectionContainer: {
+    backgroundColor: "#1A1A1A",
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#000",
+    color: "#FFFFFF",
+    marginBottom: 15,
+    textAlign: "center",
   },
-  seeAll: {
-    color: "#666",
-    fontSize: 14,
-  },
-  statsCards: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  statsCard: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  statsNumber: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#000",
-  },
-  statsLabel: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 5,
-  },
-  statsSummary: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    gap: 10,
-    marginBottom: 10,
-  },
-  summaryCard: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  summaryTitle: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 5,
-  },
-  summaryValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#000",
-    marginBottom: 5,
-  },
-  summarySubtext: {
-    fontSize: 12,
-    color: "#888",
-  },
-  distributionSection: {
-    padding: 20,
-  },
-  chartContainer: {
-    alignItems: "center",
-    marginTop: 15,
-  },
-  periodSelector: {
+  logSelector: {
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: 15,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 20,
-    padding: 5,
-  },
-  periodButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 15,
-  },
-  periodButtonActive: {
-    backgroundColor: "#000",
-  },
-  periodButtonText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  recentSection: {
-    padding: 20,
-  },
-  recentCard: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  recentTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 10,
-    color: "#000",
-  },
-  activityDescription: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 10,
-  },
-  recentInfo: {
-    gap: 5,
-  },
-  recentDate: {
-    fontSize: 12,
-    color: "#666",
-  },
-  recentCreator: {
-    fontSize: 12,
-    color: "#666",
-  },
-  recentStatus: {
-    fontSize: 12,
-    color: "#666",
-  },
-  recentDays: {
-    fontSize: 12,
-    color: "#666",
-  },
-  bottomSpacing: {
-    height: 70,
-  },
-  logSelector: {
-    flexDirection: 'row',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 20,
-    padding: 4,
-    marginLeft: 10,
   },
   logButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    marginHorizontal: 5,
+    backgroundColor: "#333333",
   },
   logButtonActive: {
-    backgroundColor: '#000',
+    backgroundColor: "#FFFFFF",
   },
   logButtonText: {
-    fontSize: 12,
-    color: '#666',
+    color: "#FFFFFF",
+    fontWeight: "bold",
   },
   logButtonTextActive: {
-    color: '#fff',
+    color: "#000000",
+  },
+  logItem: {
+    backgroundColor: "#000000", // Fundo do item de log preto
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#333333", // Borda cinza escuro
+    shadowColor: "#000", // Sombra mais aparente
+    shadowOffset: { width: 2, height: 4 },
+    shadowOpacity: 1, // Sombra mais aparente
+    shadowRadius: 5, // Sombra mais aparente
+    elevation: 8, // Sombra mais aparente para Android
+  },
+  logItemTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginBottom: 5,
+  },
+  logItemText: {
+    fontSize: 14,
+    color: "#BBBBBB",
   },
 });
+
 export default DashboardScreen;
+
