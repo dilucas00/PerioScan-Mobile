@@ -1,5 +1,5 @@
 "use client";
-
+import { View, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import React from "react";
 import {
   Modal,
@@ -9,7 +9,6 @@ import {
   Menu,
   Button,
 } from "react-native-paper";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -177,8 +176,23 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
       <Modal
         visible={visible}
         onDismiss={onDismiss}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[
+        styles.container,
+        { marginTop: Platform.OS === 'android' ? 1 : 0 }
+      ]}
       >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        enabled={Platform.OS === "ios" ? true : false}
+
+        ></KeyboardAvoidingView>
+          <ScrollView 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
         <Text style={styles.title}>Criar Novo Caso</Text>
 
         <TextInput
@@ -222,7 +236,7 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
                 setMenuTipoVisible(false);
               }}
               title={tipo}
-              titleStyle={{ color: "white" }}
+              titleStyle={{ color: "black" }} // Mudando de white para black
             />
           ))}
         </Menu>
@@ -273,7 +287,7 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
               mode="outlined"
               value={statusCaso}
               editable={false}
-              style={[styles.input, { color: "#fff" }]}
+              style={[styles.input, { color: "black" }]} 
               right={
                 <TextInput.Icon
                   icon="menu-down"
@@ -294,7 +308,7 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
                 setMenuStatusVisible(false);
               }}
               title={status}
-              titleStyle={{ color: "#fff" }}
+              titleStyle={{ color: "black" }}
             />
           ))}
         </Menu>
@@ -330,7 +344,9 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
           >
             Confirmar
           </Button>
+        
         </View>
+        </ScrollView>
       </Modal>
     </Portal>
   );
@@ -342,11 +358,12 @@ const styles = StyleSheet.create({
     padding: 25,
     marginHorizontal: 20,
     borderRadius: 12,
-    elevation: 5,
+    elevation: 15,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    maxHeight: '73%',
   },
   title: {
     fontSize: 20,
