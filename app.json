@@ -5,29 +5,31 @@
     "version": "1.0.0",
     "runtimeVersion": "51.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icone-perioscan-mobile.png",
+    "icon": "./assets/favicon.png",
     "userInterfaceStyle": "light",
     "scheme": "perioscan",
     "jsEngine": "hermes",
     "splash": {
-      "image": "./assets/icone-perioscan-mobile.png",
+      "image": "./assets/favicon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.suaempresa.perioscan"
     },
+
+    
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icone-perioscan-mobile.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/favicon.png",
+        "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.suaempresa.perioscan"
     },
     "web": {
-      "favicon": "./assets/icone-perioscan-mobile.png"
+      "favicon": "./assets/favicon.png"
     },
     "plugins": ["expo-router"],
     "experiments": {
