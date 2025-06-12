@@ -85,4 +85,7 @@ src/
 - Gráficos: react-native-chart-kit
 - Backend: Node.js/Express (API REST)
 
+## Instalação do APK
+
+
 **PerioScan-Mobile** — Gestão moderna para perícias forenses, com geolocalização, upload de fotos e relatórios inteligentes via IA.
