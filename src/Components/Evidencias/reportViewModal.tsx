@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#000",
     marginLeft: 8,
@@ -524,9 +524,9 @@ const styles = StyleSheet.create({
     height: 32,
   },
   statusBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 14,
   },
   statusText: {
     fontSize: 12,
