@@ -306,7 +306,7 @@ export default function CaseDetails() {
               textAlign: "center",
               justifyContent: "center",
               alignItems: "center",
-              marginRight: 30,
+              marginRight: 50,
             },
           ]}
         />
