@@ -159,7 +159,7 @@ export default function CaseDetails() {
               textAlign: "center",
               justifyContent: "center",
               alignItems: "center",
-              marginRight: 30,
+              marginRight: 40,
             },
           ]}
         />
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7F7F7",
     elevation: 0,
     shadowOpacity: 0,
-    height: 70,
+    height: 50,
   },
   headerTitle: {
     color: "#000000",

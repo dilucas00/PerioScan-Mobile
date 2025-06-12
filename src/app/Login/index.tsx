@@ -1,4 +1,6 @@
-import React, { useEffect } from "react";
+"use client";
+
+import React from "react";
 import {
   View,
   StyleSheet,
@@ -25,17 +27,6 @@ export default function Login() {
   const [erro, setErro] = React.useState("");
   const [sucesso, setSucesso] = React.useState("");
 
-  //  Verifica se já está logado
-  useEffect(() => {
-    const verificarLogin = async () => {
-      const token = await AsyncStorage.getItem("token");
-      if (token) {
-        router.replace("/DashboardAdmin");
-      }
-    };
-    verificarLogin();
-  }, []);
-
   const handleLogin = async () => {
     setLoading(true);
     setErro("");
@@ -57,7 +48,6 @@ export default function Login() {
       );
 
       const data = await response.json();
-      console.log("Resposta do servidor:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "Credenciais inválidas");
@@ -67,7 +57,6 @@ export default function Login() {
         throw new Error("Dados de autenticação incompletos");
       }
 
-      // Salvando no AsyncStorage
       await AsyncStorage.setItem("token", data.token);
       await AsyncStorage.setItem("userId", String(data.user.id));
       await AsyncStorage.setItem("name", data.user.name);
@@ -76,7 +65,6 @@ export default function Login() {
       setSucesso("Login realizado com sucesso!");
       router.replace("/DashboardAdmin");
     } catch (err) {
-      console.error("Erro no login:", err);
       if (err instanceof Error) {
         setErro(
           err.message.includes("Failed to fetch")
@@ -112,13 +100,17 @@ export default function Login() {
           mode="outlined"
           value={email}
           onChangeText={setEmail}
-          style={styles.input}
           autoCapitalize="none"
-          textColor="#000"
-          placeholderTextColor="#000"
-          outlineColor="#000"
-          activeOutlineColor="#000"
-          theme={{ colors: { background: "#FFF", placeholder: "#000" } }}
+          underlineColorAndroid="transparent"
+          style={[styles.input, styles.inputText]}
+          theme={{
+            colors: {
+              text: "#000",
+              placeholder: "#000",
+              primary: "#000",
+              outline: "#000",
+            },
+          }}
         />
 
         <TextInput
@@ -127,18 +119,22 @@ export default function Login() {
           secureTextEntry={!showPassword}
           value={senha}
           onChangeText={setSenha}
-          style={styles.input}
-          textColor="#000"
-          placeholderTextColor="#000"
-          outlineColor="#000"
-          activeOutlineColor="#000"
-          theme={{ colors: { background: "#FFF", placeholder: "#000" } }}
+          underlineColorAndroid="transparent"
+          style={[styles.input, styles.inputText]}
           right={
             <TextInput.Icon
               icon={showPassword ? "eye-off" : "eye"}
               onPress={() => setshowPassword(!showPassword)}
             />
           }
+          theme={{
+            colors: {
+              text: "#000",
+              placeholder: "#000",
+              primary: "#000",
+              outline: "#000",
+            },
+          }}
         />
 
         <Button
@@ -214,6 +210,10 @@ const styles = StyleSheet.create({
   input: {
     width: "100%",
     marginBottom: 12,
+    backgroundColor: "#fff",
+  },
+  inputText: {
+    color: "#000",
   },
   botao: {
     marginTop: 8,
