@@ -19,6 +19,7 @@ import CardEvidence from "../../../Components/CardEvidence";
 import CardRelatorios from "../../../Components/CardRelatorios";
 import DeleteCaseModal from "../../../Components/Casos/deleteCaseModal";
 import EditCaseModal from "../../../Components/Casos/editCaseModal";
+import CardVictims from "../../../Components/CardVictims";
 
 export default function CaseDetails() {
   const router = useRouter();
@@ -323,6 +324,7 @@ export default function CaseDetails() {
             { value: "geral", label: "Geral" },
             { value: "evidências", label: "Evidências" },
             { value: "relatórios", label: "Relatórios" },
+            { value: "vítimas", label: "Vítimas" },
           ]}
         />
 
@@ -344,6 +346,8 @@ export default function CaseDetails() {
         {value === "evidências" && <CardEvidence caseId={caseData.id} />}
 
         {value === "relatórios" && <CardRelatorios caseId={caseData.id} />}
+
+        {value === "vítimas" && <CardVictims caseId={caseData.id} />}
       </ScrollView>
 
       {/* Botão flutuante de editar - só aparece na aba "geral" */}
