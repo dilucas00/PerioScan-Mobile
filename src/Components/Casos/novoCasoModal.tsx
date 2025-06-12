@@ -71,7 +71,18 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
     "Outros",
   ];
 
+  // Adicionar um mapeamento para os valores de status
   const statusCasos = ["Em andamento", "Finalizado", "Arquivado"];
+
+  // Função para mapear os valores de status para o formato esperado pelo backend
+  const mapStatusToBackend = (status: string): string => {
+    const statusMap: { [key: string]: string } = {
+      "Em andamento": "em andamento",
+      Finalizado: "finalizado",
+      Arquivado: "arquivado",
+    };
+    return statusMap[status] || "em andamento";
+  };
 
   const handleConfirm = async () => {
     // Validação dos campos obrigatórios
@@ -105,7 +116,7 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
         description: descricao.trim(),
         location: localizacao.trim(),
         type: tipoCaso || "nao especificado",
-        status: statusCaso || "em andamento",
+        status: mapStatusToBackend(statusCaso) || "em andamento", // Usar a função de mapeamento aqui
         ...(dataCaso && { occurrenceDate: dataCaso.toISOString() }),
       };
 
