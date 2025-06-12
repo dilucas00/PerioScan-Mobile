@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Text,
@@ -6,11 +8,12 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { Searchbar, Button, PaperProvider, FAB } from "react-native-paper";
-import CaseCard from "src/Components/caseCard";
-import NovoCasoModal from "src/Components/novoCasoModal";
+import { Searchbar, PaperProvider, FAB } from "react-native-paper";
+import CaseCard from "../../Components/Casos/caseCard";
+import NovoCasoModal from "../../Components/Casos/novoCasoModal";
 import FiltroButton from "src/Components/FiltroButton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function Cases() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -77,6 +80,14 @@ export default function Cases() {
     }
   }
 
+  // Remover o useEffect atual e substituir por:
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchCases(value);
+    }, [value])
+  );
+
+  // Manter o useEffect original também para mudanças de filtro
   React.useEffect(() => {
     fetchCases(value);
   }, [value]);

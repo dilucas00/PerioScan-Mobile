@@ -114,6 +114,11 @@ export default function Login() {
           onChangeText={setEmail}
           style={styles.input}
           autoCapitalize="none"
+          textColor="#000"
+          placeholderTextColor="#000"
+          outlineColor="#000"
+          activeOutlineColor="#000"
+          theme={{ colors: { background: "#FFF", placeholder: "#000" } }}
         />
 
         <TextInput
@@ -123,6 +128,11 @@ export default function Login() {
           value={senha}
           onChangeText={setSenha}
           style={styles.input}
+          textColor="#000"
+          placeholderTextColor="#000"
+          outlineColor="#000"
+          activeOutlineColor="#000"
+          theme={{ colors: { background: "#FFF", placeholder: "#000" } }}
           right={
             <TextInput.Icon
               icon={showPassword ? "eye-off" : "eye"}

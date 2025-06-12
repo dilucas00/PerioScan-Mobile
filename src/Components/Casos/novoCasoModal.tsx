@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Modal,
@@ -6,8 +8,6 @@ import {
   TextInput,
   Menu,
   Button,
-  useTheme,
-  IconButton,
 } from "react-native-paper";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
@@ -74,33 +74,49 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
   const statusCasos = ["Em andamento", "Finalizado", "Arquivado"];
 
   const handleConfirm = async () => {
-    if (!titulo || !localizacao || !descricao) {
-      console.error("Por favor, preencha todos os campos obrigatórios: Título, Localização e Descrição.");
+    // Validação dos campos obrigatórios
+    if (!titulo.trim()) {
+      console.error("Título é obrigatório");
+      return;
+    }
+
+    if (!descricao.trim()) {
+      console.error("Descrição é obrigatória");
+      return;
+    }
+
+    if (!localizacao.trim()) {
+      console.error("Localização é obrigatória");
       return;
     }
 
     try {
-      const token = await AsyncStorage.getItem('userToken');
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
-        console.error("Token de autenticação não encontrado. Por favor, faça login novamente.");
+        console.error(
+          "Token de autenticação não encontrado. Por favor, faça login novamente."
+        );
         return;
       }
 
+      // Preparar dados para envio
       const caseData = {
-        title: titulo,
-        description: descricao,
-        location: localizacao,
+        title: titulo.trim(),
+        description: descricao.trim(),
+        location: localizacao.trim(),
         type: tipoCaso || "nao especificado",
-        occurrenceDate: dataCaso ? dataCaso.toISOString() : undefined,
         status: statusCaso || "em andamento",
+        ...(dataCaso && { occurrenceDate: dataCaso.toISOString() }),
       };
+
+      console.log("Enviando dados do caso:", caseData);
 
       const response = await fetch(
         "https://perioscan-back-end-fhhq.onrender.com/api/cases",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(caseData),
@@ -109,27 +125,39 @@ const NovoCasoModal: React.FC<NovoCasoModalProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Erro ao criar caso");
+        throw new Error(
+          errorData.message || `Erro ${response.status}: ${response.statusText}`
+        );
       }
 
-      const data = await response.json();
-      console.log("Caso criado com sucesso:", data);
+      const result = await response.json();
+      console.log("Caso criado com sucesso:", result);
+
+      // Chamar callback de confirmação com os dados retornados
       onConfirm({
-        titulo,
-        localizacao,
-        tipo: tipoCaso,
-        status: statusCaso,
-        data: dataCaso || new Date(),
+        titulo: result.title || titulo,
+        localizacao: result.location || localizacao,
+        tipo: result.type || tipoCaso,
+        status: result.status || statusCaso,
+        data: result.occurrenceDate
+          ? new Date(result.occurrenceDate)
+          : dataCaso || new Date(),
       });
+
+      // Limpar formulário
       setTitulo("");
       setLocalizacao("");
       setTipoCaso("");
       setStatusCaso("");
       setDataCaso(undefined);
       setDescricao("");
-      onDismiss(); // Fecha o modal após o sucesso
+
+      // Fechar modal
+      onDismiss();
     } catch (error: any) {
-      console.error("Erro ao criar caso:", error.message);
+      console.error("Erro ao criar caso:", error);
+      // Aqui você pode adicionar um Alert ou outro feedback visual se desejar
+      // Alert.alert("Erro", error.message || "Erro ao criar caso");
     }
   };
 

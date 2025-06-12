@@ -1,14 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import { Appbar } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import CaseDetailCard from "../../../Components/caseDetailCard";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import CaseDetailCard from "../../../Components/Casos/caseDetailCard";
 import FiltroButton from "../../../Components/FiltroButton";
 import CardEvidence from "../../../Components/CardEvidence";
 import CardRelatorios from "../../../Components/CardRelatorios";
+import DeleteCaseModal from "../../../Components/Casos/deleteCaseModal";
 
 export default function CaseDetails() {
   const router = useRouter();
@@ -36,6 +44,8 @@ export default function CaseDetails() {
   };
 
   const [value, setValue] = useState("geral");
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const caseData = {
     id: id || "ID não recebido",
@@ -59,6 +69,80 @@ export default function CaseDetails() {
     { label: "Criado por:", value: caseData.createdBy },
     { label: "Tipo:", value: caseData.type },
   ];
+
+  const handleDeleteCase = async () => {
+    setDeleteLoading(true);
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert(
+          "Erro",
+          "Você precisa estar autenticado para excluir casos"
+        );
+        return;
+      }
+
+      console.log("Excluindo caso:", caseData.id);
+      const response = await fetch(
+        `https://perioscan-back-end-fhhq.onrender.com/api/cases/${caseData.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Erro ${response.status}: ${response.statusText}`
+        );
+      }
+
+      console.log("Caso excluído com sucesso");
+
+      // Fechar modal imediatamente
+      setDeleteModalVisible(false);
+
+      // Navegar de volta para a lista de casos
+      router.replace("/Cases");
+
+      // Mostrar mensagem de sucesso após um pequeno delay para garantir que a navegação aconteceu
+      setTimeout(() => {
+        Alert.alert(
+          "Sucesso",
+          `O caso "${caseData.title}" foi excluído com sucesso!`,
+          [{ text: "OK" }]
+        );
+      }, 500);
+    } catch (error: any) {
+      console.error("Erro ao excluir caso:", error);
+      let userMessage = "Erro ao excluir caso";
+
+      if (error.message) {
+        if (error.message.includes("Failed to fetch")) {
+          userMessage =
+            "Erro de conexão. Verifique sua internet e tente novamente.";
+        } else if (error.message.includes("401")) {
+          userMessage = "Sessão expirada. Faça login novamente.";
+        } else if (error.message.includes("403")) {
+          userMessage = "Você não tem permissão para excluir este caso.";
+        } else if (error.message.includes("404")) {
+          userMessage = "Caso não encontrado.";
+        } else if (error.message.includes("500")) {
+          userMessage =
+            "Erro interno do servidor. Tente novamente em alguns minutos.";
+        } else {
+          userMessage = error.message;
+        }
+      }
+
+      Alert.alert("Erro", userMessage);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   return (
     <View style={styles.mainContainer}>
@@ -100,6 +184,8 @@ export default function CaseDetails() {
             <CaseDetailCard
               title="Informações Gerais"
               items={generalInfoItems}
+              showDeleteButton={true}
+              onDelete={() => setDeleteModalVisible(true)}
             />
             <CaseDetailCard
               title="Descrição do Caso"
@@ -122,6 +208,15 @@ export default function CaseDetails() {
       >
         <MaterialIcons name="edit" size={28} color="#FFF" />
       </TouchableOpacity>
+
+      {/* Modal de confirmação de exclusão */}
+      <DeleteCaseModal
+        visible={deleteModalVisible}
+        onDismiss={() => setDeleteModalVisible(false)}
+        onConfirm={handleDeleteCase}
+        caseTitle={caseData.title}
+        loading={deleteLoading}
+      />
     </View>
   );
 }
@@ -149,19 +244,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 20,
   },
-  // titleCardContainer: {
-  //   paddingHorizontal: 24,
-  //   paddingBottom: 16,
-  //   marginTop: 24,
-  //   alignItems: "center",
-  // },
-  // titleContainerCard: {
-  //   fontSize: 15,
-  //   fontWeight: "600",
-  //   color: "#333",
-  //   textAlign: "center",
-  // },
-
   // Estilo do botão flutuante de editar
   floatingEditButton: {
     backgroundColor: "#000",
