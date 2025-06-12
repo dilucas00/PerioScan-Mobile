@@ -87,5 +87,9 @@ src/
 
 ## Instalação do APK
 
+**Link do apk no google drive:
+
+https://drive.google.com/drive/folders/1x20l88JKghjG3BMUViy6WNp3TZ_9kwwY
+
 
 **PerioScan-Mobile** — Gestão moderna para perícias forenses, com geolocalização, upload de fotos e relatórios inteligentes via IA.
