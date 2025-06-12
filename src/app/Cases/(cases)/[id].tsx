@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7F7F7",
     elevation: 0,
     shadowOpacity: 0,
-    height: 70,
+    height: 30,
   },
   headerTitle: {
     color: "#000000",
