@@ -128,7 +128,9 @@ const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
   };
 
   const handleViewVictim = async () => {
-    console.log("handleViewVictim chamado, selectedVictim:", selectedVictim);
+    console.log("👁️ handleViewVictim chamado");
+    console.log("🎯 selectedVictim:", selectedVictim);
+    console.log("📊 Total de vítimas carregadas:", victims.length);
 
     if (!selectedVictim) {
       Alert.alert("Atenção", "Selecione uma vítima para visualizar");
@@ -136,25 +138,32 @@ const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
     }
 
     try {
-      console.log("Buscando vítima para visualização...");
+      console.log("🔍 Buscando vítima para visualização...");
+
+      // Adicionar loading visual se necessário
       const victim = await getVictimById(selectedVictim);
-      console.log("Vítima obtida:", victim);
+      console.log("📦 Vítima obtida:", victim);
 
       if (victim) {
         setViewingVictim(victim);
         setViewModalVisible(true);
-        console.log("Modal de visualização aberto");
+        console.log("✅ Modal de visualização aberto");
       } else {
-        Alert.alert("Erro", "Não foi possível carregar a vítima");
+        console.log("❌ Vítima não encontrada");
+        Alert.alert(
+          "Erro",
+          "Vítima não encontrada ou não foi possível carregá-la"
+        );
       }
     } catch (error: any) {
-      console.error("Erro ao visualizar vítima:", error);
+      console.error("❌ Erro ao visualizar vítima:", error);
       Alert.alert("Erro", error.message || "Erro ao carregar vítima");
     }
   };
 
   const handleEditVictim = async () => {
-    console.log("handleEditVictim chamado, selectedVictim:", selectedVictim);
+    console.log("✏️ handleEditVictim chamado");
+    console.log("🎯 selectedVictim:", selectedVictim);
 
     if (!selectedVictim) {
       Alert.alert("Atenção", "Selecione uma vítima para editar");
@@ -162,8 +171,11 @@ const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
     }
 
     try {
+      console.log("🔍 Carregando vítima para edição...");
       const victim = await getVictimById(selectedVictim);
+
       if (victim) {
+        console.log("📝 Preparando formulário de edição...");
         setEditingVictim(victim);
         setEditMode(true);
 
@@ -178,11 +190,16 @@ const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
         setReferenceCode(victim.referenceCode || "");
 
         setModalVisible(true);
+        console.log("✅ Modal de edição aberto");
       } else {
-        Alert.alert("Erro", "Não foi possível carregar a vítima");
+        console.log("❌ Vítima não encontrada para edição");
+        Alert.alert(
+          "Erro",
+          "Vítima não encontrada ou não foi possível carregá-la"
+        );
       }
     } catch (error: any) {
-      console.error("Erro ao carregar vítima para edição:", error);
+      console.error("❌ Erro ao carregar vítima para edição:", error);
       Alert.alert("Erro", error.message || "Erro ao carregar vítima");
     }
   };

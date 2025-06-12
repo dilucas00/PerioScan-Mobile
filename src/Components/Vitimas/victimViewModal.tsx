@@ -239,23 +239,10 @@ const VictimViewModal: React.FC<VictimViewModalProps> = ({
 
           {/* Botões */}
           <View style={styles.buttons}>
-            {onEdit && (
-              <Button
-                mode="outlined"
-                onPress={onEdit}
-                style={styles.editButton}
-                textColor="#000"
-                icon="edit"
-                labelStyle={{ fontWeight: "bold" }}
-              >
-                Editar
-              </Button>
-            )}
-
             <Button
               mode="contained"
               onPress={onDismiss}
-              style={styles.closeButtonBottom}
+              style={styles.closeButtonFull}
               buttonColor="#000"
               textColor="#FFF"
               icon="close"
@@ -393,15 +380,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
   },
-  editButton: {
-    flex: 1,
-    borderColor: "#000",
-    borderWidth: 1,
+  closeButtonFull: {
     borderRadius: 8,
-  },
-  closeButtonBottom: {
-    flex: 1,
-    borderRadius: 8,
+    width: "100%",
   },
 });
 

@@ -154,12 +154,8 @@ const VictimTable: React.FC<VictimTableProps> = ({
           <View style={styles.infoColumn}>
             <Text style={styles.infoText} numberOfLines={1}>
               {victim.identificationType === "identificada"
-                ? victim.gender && victim.age
-                  ? `${victim.gender}, ${victim.age}a`
-                  : victim.gender || victim.age
-                  ? `${victim.gender || ""}${
-                      victim.age ? victim.age + "a" : ""
-                    }`
+                ? victim.age
+                  ? `${victim.age} anos`
                   : "N/A"
                 : victim.nic || "N/A"}
             </Text>
