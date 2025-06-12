@@ -10,12 +10,15 @@ import VictimModal from "../Components/Vitimas/victimModal";
 import VictimViewModal from "../Components/Vitimas/victimViewModal";
 import ConfirmationModal from "../Components/confirmationModal";
 import { useVictims } from "../services/useVictims";
+import Odontogram from "../Components/Vitimas/odontogram";
+import { useOdontogram } from "../services/useOdontogram";
 
 interface CardVictimsProps {
   caseId?: string;
 }
 
 const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
+  const [selectedVictim, setSelectedVictim] = useState<string | null>(null);
   const {
     victims,
     loading,
@@ -25,6 +28,15 @@ const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
     updateVictim,
     deleteVictim,
   } = useVictims(caseId);
+  const {
+    teeth,
+    loading: odontogramLoading,
+    updateTooth,
+    fetchOdontogram,
+  } = useOdontogram(selectedVictim || undefined);
+
+  // Adicionar estado para controlar visibilidade do odontograma
+  const [showOdontogram, setShowOdontogram] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [viewModalVisible, setViewModalVisible] = useState(false);
@@ -32,7 +44,6 @@ const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
   const [editMode, setEditMode] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [selectedVictim, setSelectedVictim] = useState<string | null>(null);
   const [viewingVictim, setViewingVictim] = useState<any>(null);
   const [editingVictim, setEditingVictim] = useState<any>(null);
 
@@ -236,11 +247,37 @@ const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
     }
   };
 
+  // Atualizar handleSelectVictim para recarregar odontograma
   const handleSelectVictim = (victimId: string) => {
     console.log("Selecionando vítima:", victimId);
     const newSelection = selectedVictim === victimId ? null : victimId;
     setSelectedVictim(newSelection);
+
+    // Se odontograma estiver visível, recarregar dados
+    if (showOdontogram && newSelection) {
+      fetchOdontogram();
+    }
+
     console.log("Vítima selecionada:", newSelection);
+  };
+
+  // Função para alternar visibilidade do odontograma
+  const toggleOdontogram = () => {
+    if (!selectedVictim) {
+      Alert.alert(
+        "Atenção",
+        "Selecione uma vítima para visualizar o odontograma"
+      );
+      return;
+    }
+
+    const newShowState = !showOdontogram;
+    setShowOdontogram(newShowState);
+
+    // Se estiver mostrando, carregar dados
+    if (newShowState) {
+      fetchOdontogram();
+    }
   };
 
   const getSelectedVictimName = () => {
@@ -287,6 +324,34 @@ const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
           onDeleteVictim={handleDeleteVictim}
           showButtons={victims.length > 0}
         />
+
+        {/* Botão para mostrar/ocultar odontograma */}
+        {victims.length > 0 && (
+          <Button
+            mode={showOdontogram ? "contained" : "outlined"}
+            onPress={toggleOdontogram}
+            style={[
+              styles.odontogramButton,
+              showOdontogram && styles.odontogramButtonActive,
+            ]}
+            icon={showOdontogram ? "tooth-outline" : "tooth"}
+            buttonColor={showOdontogram ? "#4CAF50" : undefined}
+            textColor={showOdontogram ? "#FFF" : "#4CAF50"}
+            disabled={!selectedVictim}
+          >
+            {showOdontogram ? "Ocultar Odontograma" : "Mostrar Odontograma"}
+          </Button>
+        )}
+
+        {/* Odontograma - só aparece se showOdontogram for true e tiver vítima selecionada */}
+        {showOdontogram && selectedVictim && (
+          <Odontogram
+            victimId={selectedVictim}
+            teeth={teeth}
+            onUpdateTooth={updateTooth}
+            loading={odontogramLoading}
+          />
+        )}
 
         <Button
           mode="contained"
@@ -358,6 +423,7 @@ const CardVictims: React.FC<CardVictimsProps> = ({ caseId }) => {
   );
 };
 
+// Adicionar estilos para o botão do odontograma:
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
@@ -386,6 +452,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderRadius: 8,
     paddingVertical: 4,
+  },
+  odontogramButton: {
+    marginTop: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    paddingVertical: 4,
+    borderColor: "#4CAF50",
+  },
+  odontogramButtonActive: {
+    backgroundColor: "#4CAF50",
   },
 });
 
