@@ -6,7 +6,7 @@ import { StyleSheet, Alert } from "react-native";
 import { Text, Card, Button } from "react-native-paper";
 import ReportTable from "./Evidencias/reportTable";
 import ReportActionButtons from "./Evidencias/reportActionButtons";
-import ReportModal from "./Evidencias/ReportModal";
+import ReportModal from "./Evidencias/reportModal";
 import ReportViewModal from "./Evidencias/reportViewModal";
 import ConfirmationModal from "./Evidencias/confirmationModal";
 import { useReports } from "../services/useReports";
@@ -276,6 +276,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    padding: 16,
+    flex: 1,
   },
   title: {
     fontSize: 18,
