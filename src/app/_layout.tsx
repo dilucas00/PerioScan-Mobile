@@ -1,15 +1,15 @@
 "use client";
-import { Tabs, usePathname } from "expo-router"; // Alterado de useSegments para usePathname
+import { Tabs, usePathname } from "expo-router";
 import { Image, StyleSheet, View } from "react-native";
 import AppBarHeader from "../Components/AppBarHeader";
 import { PaperProvider } from "react-native-paper";
 
 export default function AppLayout() {
   const pathname = usePathname();
-  console.log("Current pathname:", pathname); // Adicionado para depuração
+  console.log("Current pathname:", pathname);
 
-  // Não renderizar o AppBarHeader na tela de Login
-  const isLoginScreen = pathname === "/Login";
+  // Não renderizar o AppBarHeader na tela de Login ou na tela inicial
+  const isLoginScreen = pathname === "/Login" || pathname === "/";
   const showHeader = !isLoginScreen;
 
   return (
@@ -32,9 +32,9 @@ export default function AppLayout() {
         />
 
         <Tabs.Screen
-          name="Login/index" // Adicionado para a tela de Login
+          name="Login/index"
           options={{
-            href: null, // Oculta da TabBar
+            href: null,
           }}
         />
 
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 20,
     margin: 10,
-    marginBottom: 40,
+    marginBottom: 30,
     borderTopWidth: 0,
     elevation: 0,
     shadowOpacity: 0,
