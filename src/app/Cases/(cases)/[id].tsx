@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-import { Appbar } from "react-native-paper";
+import { Appbar, Text } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -17,47 +18,100 @@ import FiltroButton from "../../../Components/FiltroButton";
 import CardEvidence from "../../../Components/CardEvidence";
 import CardRelatorios from "../../../Components/CardRelatorios";
 import DeleteCaseModal from "../../../Components/Casos/deleteCaseModal";
+import EditCaseModal from "../../../Components/Casos/editCaseModal";
 
 export default function CaseDetails() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const {
-    id,
-    title,
-    openDate,
-    occurrenceDate,
-    location,
-    status,
-    createdBy,
-    type,
-    descricao,
-  } = params as {
-    id: string;
-    title: string;
-    openDate: string;
-    occurrenceDate: string;
-    location: string;
-    status: string;
-    createdBy: string;
-    type: string;
-    descricao: string;
-  };
+  const { id } = params as { id: string };
 
   const [value, setValue] = useState("geral");
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const caseData = {
+  const [loading, setLoading] = useState(true);
+  const [caseData, setCaseData] = useState({
     id: id || "ID não recebido",
-    title: title || "Título não recebido",
-    openDate: openDate || "Data de abertura não recebida",
-    occurrenceDate: occurrenceDate || "Data de ocorrência não recebida",
-    location: location || "Local não recebido",
-    status: status || "Status não recebido",
-    createdBy: createdBy || "Criador não recebido",
-    type: type || "Tipo não recebido",
-    descricao: descricao || "Descrição não recebida",
+    title: "Carregando...",
+    openDate: "Carregando...",
+    occurrenceDate: "Carregando...",
+    location: "Carregando...",
+    status: "Carregando...",
+    createdBy: "Carregando...",
+    type: "Carregando...",
+    description: "Carregando...",
+  });
+
+  // Função para formatar data do servidor para exibição
+  const formatDateForDisplay = (dateString: string | undefined) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("pt-BR");
+    } catch (error) {
+      console.error("Erro ao formatar data:", error);
+      return "N/A";
+    }
   };
+
+  // Função para buscar dados atualizados do servidor
+  const fetchCaseData = async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Erro", "Você precisa estar autenticado");
+        router.replace("/Login");
+        return;
+      }
+
+      console.log("Buscando dados do caso:", id);
+      const response = await fetch(
+        `https://perioscan-back-end-fhhq.onrender.com/api/cases/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Dados do caso recebidos:", data);
+
+      // Normalizar os dados recebidos
+      const caseInfo = data.data || data;
+      const updatedCaseData = {
+        id: caseInfo.id || caseInfo._id || id,
+        title: caseInfo.title || "Título não disponível",
+        openDate: formatDateForDisplay(caseInfo.openDate || caseInfo.createdAt),
+        occurrenceDate: formatDateForDisplay(caseInfo.occurrenceDate),
+        location: caseInfo.location || "Local não disponível",
+        status: caseInfo.status || "Status não disponível",
+        createdBy: caseInfo.createdBy?.name || "Criador não disponível",
+        type: caseInfo.type || "Tipo não disponível",
+        description: caseInfo.description || "Descrição não disponível",
+      };
+
+      setCaseData(updatedCaseData);
+    } catch (error: any) {
+      console.error("Erro ao buscar dados do caso:", error);
+      Alert.alert("Erro", error.message || "Erro ao carregar dados do caso");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carregar dados quando o componente montar
+  useEffect(() => {
+    if (id) {
+      fetchCaseData();
+    }
+  }, [id]);
 
   const generalInfoItems = [
     { label: "ID do caso:", value: caseData.id },
@@ -144,6 +198,99 @@ export default function CaseDetails() {
     }
   };
 
+  const handleEditCase = async (updatedCase: any) => {
+    console.log("Caso atualizado:", updatedCase);
+
+    try {
+      // Primeiro, recarregar os dados do servidor para garantir que temos as informações mais atuais
+      await fetchCaseData();
+
+      // Depois de atualizar os dados, mostrar a mensagem de sucesso
+      Alert.alert("Sucesso", "Caso atualizado com sucesso!", [
+        {
+          text: "OK",
+        },
+      ]);
+    } catch (error) {
+      console.error("Erro ao recarregar dados após edição:", error);
+      Alert.alert(
+        "Aviso",
+        "Caso foi editado, mas houve um problema ao recarregar os dados. Tente atualizar a página."
+      );
+    }
+  };
+
+  // Função para converter data de exibição para formato ISO (para o modal de edição)
+  const convertDateForEdit = (displayDate: string): string | undefined => {
+    if (
+      !displayDate ||
+      displayDate === "N/A" ||
+      displayDate === "Carregando..."
+    ) {
+      return undefined;
+    }
+
+    try {
+      // Se a data está no formato dd/mm/yyyy, converter para ISO
+      const parts = displayDate.split("/");
+      if (parts.length === 3) {
+        const [day, month, year] = parts;
+        const isoDate = `${year}-${month.padStart(2, "0")}-${day.padStart(
+          2,
+          "0"
+        )}`;
+        const date = new Date(isoDate);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString();
+        }
+      }
+      return undefined;
+    } catch (error) {
+      console.error("Erro ao converter data:", error);
+      return undefined;
+    }
+  };
+
+  // Preparar dados para o modal de edição
+  const getEditCaseData = () => ({
+    id: caseData.id,
+    title: caseData.title,
+    description: caseData.description,
+    type: caseData.type,
+    location: caseData.location,
+    status: caseData.status,
+    occurrenceDate: convertDateForEdit(caseData.occurrenceDate),
+  });
+
+  if (loading) {
+    return (
+      <View style={styles.mainContainer}>
+        <Appbar.Header style={styles.header}>
+          <Appbar.BackAction
+            color="#000000"
+            onPress={() => router.replace("/Cases")}
+          />
+          <Appbar.Content
+            title="Carregando..."
+            titleStyle={[
+              styles.headerTitle,
+              {
+                textAlign: "center",
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: 30,
+              },
+            ]}
+          />
+        </Appbar.Header>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#000" />
+          <Text style={styles.loadingText}>Carregando dados do caso...</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.mainContainer}>
       <Appbar.Header style={styles.header}>
@@ -159,7 +306,7 @@ export default function CaseDetails() {
               textAlign: "center",
               justifyContent: "center",
               alignItems: "center",
-              marginRight: 40,
+              marginRight: 30,
             },
           ]}
         />
@@ -189,25 +336,25 @@ export default function CaseDetails() {
             />
             <CaseDetailCard
               title="Descrição do Caso"
-              description={caseData.descricao}
+              description={caseData.description}
             />
           </>
         )}
 
-        {value === "evidências" && <CardEvidence />}
+        {value === "evidências" && <CardEvidence caseId={caseData.id} />}
 
         {value === "relatórios" && <CardRelatorios caseId={caseData.id} />}
       </ScrollView>
 
-      {/* Botão flutuante de editar */}
-      <TouchableOpacity
-        style={styles.floatingEditButton}
-        onPress={() => {
-          console.log("Editar caso clicado");
-        }}
-      >
-        <MaterialIcons name="edit" size={28} color="#FFF" />
-      </TouchableOpacity>
+      {/* Botão flutuante de editar - só aparece na aba "geral" */}
+      {value === "geral" && (
+        <TouchableOpacity
+          style={styles.floatingEditButton}
+          onPress={() => setEditModalVisible(true)}
+        >
+          <MaterialIcons name="edit" size={28} color="#FFF" />
+        </TouchableOpacity>
+      )}
 
       {/* Modal de confirmação de exclusão */}
       <DeleteCaseModal
@@ -216,6 +363,14 @@ export default function CaseDetails() {
         onConfirm={handleDeleteCase}
         caseTitle={caseData.title}
         loading={deleteLoading}
+      />
+
+      {/* Modal de edição de caso */}
+      <EditCaseModal
+        visible={editModalVisible}
+        onDismiss={() => setEditModalVisible(false)}
+        onConfirm={handleEditCase}
+        caseData={getEditCaseData()}
       />
     </View>
   );
@@ -231,7 +386,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7F7F7",
     elevation: 0,
     shadowOpacity: 0,
-    height: 50,
+    height: 70,
   },
   headerTitle: {
     color: "#000000",
@@ -243,6 +398,17 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F7F7F7",
+  },
+  loadingText: {
+    marginTop: 16,
+    color: "#666",
+    fontSize: 16,
   },
   // Estilo do botão flutuante de editar
   floatingEditButton: {

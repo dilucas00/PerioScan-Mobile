@@ -3,18 +3,17 @@ import { View, StyleSheet } from "react-native";
 import { Text, Card } from "react-native-paper";
 
 interface CardEvidenceProps {
-  // Defina as props necessárias para o card de evidências aqui
-  // Exemplo: title: string; items: Array<{ label: string; value: string }>;
+  caseId: string;
 }
 
-const CardEvidence: React.FC<CardEvidenceProps> = (props) => {
+const CardEvidence: React.FC<CardEvidenceProps> = ({ caseId }) => {
   // Adicione a lógica e a estrutura do seu card de evidências aqui
   return (
     <Card style={styles.card}>
       <Card.Content>
         <Text style={styles.title}>Evidências</Text>
         {/* Conteúdo do card de evidências */}
-        <Text>Detalhes sobre as evidências serão exibidos aqui.</Text>
+        <Text>Detalhes sobre as evidências para o caso ID: {caseId} serão exibidos aqui.</Text>
       </Card.Content>
     </Card>
   );
