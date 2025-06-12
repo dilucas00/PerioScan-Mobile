@@ -4,11 +4,11 @@ import type React from "react";
 import { useState } from "react";
 import { StyleSheet, Alert } from "react-native";
 import { Text, Card, Button } from "react-native-paper";
-import ReportTable from "./Evidencias/reportTable";
-import ReportActionButtons from "./Evidencias/reportActionButtons";
-import ReportModal from "./Evidencias/reportModal";
-import ReportViewModal from "./Evidencias/reportViewModal";
-import ConfirmationModal from "./Evidencias/confirmationModal";
+import ReportTable from "./Relatorios/reportTable";
+import ReportActionButtons from "./Relatorios/reportActionButtons";
+import ReportModal from "./Relatorios/ReportModal";
+import ReportViewModal from "./Relatorios/reportViewModal";
+import ConfirmationModal from "./Relatorios/confirmationModal";
 import { useReports } from "../services/useReports";
 
 interface CardRelatoriosProps {
